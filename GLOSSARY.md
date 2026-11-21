@@ -26,6 +26,10 @@ _Avoid_: Connection, link, token (the token is an implementation detail of an Au
 A Handle covered by an active Authorization; both Public and Private Data are collected for it. When the Authorization ends, it reverts to a plain Handle and keeps its history.
 _Avoid_: Connected Account, Private Handle, Linked Handle
 
+**Platform Login**:
+The way an owner logs into one Platform to grant an Authorization, offered as one "Connect" option per Platform (e.g. Connect Instagram). Each Platform has its own, even when two Platforms share the same company login behind the scenes.
+_Avoid_: Login (on its own), Authorizer, Connect Flow, Login Provider
+
 ### Data
 
 **Public Data**:
@@ -60,6 +64,14 @@ The account-wide counts of a Handle (followers, subscribers, number of posts) as
 _Avoid_: Profile stats, account stats
 
 ### Collection
+
+**Harvester**:
+The part of the harvester that knows how to collect from one Platform; adding a Platform means adding its Harvester.
+_Avoid_: Connector, client, adapter
+
+**Harvest**:
+Everything a Harvester brings back for one Handle in one Collection Run: Raw Payloads labelled Public or Private, the Handle's account counts, Posts the Platform says are gone, and whether it finished or stopped early on quota.
+_Avoid_: Batch, result, fetch
 
 **Collection Run**:
 One pass over a Handle that collects every Post within its Tracking Window and records a Metric Snapshot for each.
