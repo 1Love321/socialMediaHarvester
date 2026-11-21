@@ -60,7 +60,7 @@ A previously collected Post that the Platform no longer returns (deleted, made p
 _Avoid_: Deleted post, missing post
 
 **Raw Payload**:
-The Platform's response for a Post from one fetch, exactly as received. It is the source of truth: the Post and each Metric Snapshot are derived from Raw Payloads and can be re-derived from them.
+A Post's or a Handle's part of the Platform's response from one fetch, with its content unchanged. It is the source of truth: the Post, each Metric Snapshot and each Handle Snapshot are derived from Raw Payloads and can be re-derived from them while they are kept. Older Raw Payloads are deleted after a set time, except the latest one for each Post and Handle.
 _Avoid_: Source JSON, original
 
 **Metric Snapshot**:
