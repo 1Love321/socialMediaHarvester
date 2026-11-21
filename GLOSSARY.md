@@ -19,16 +19,24 @@ A single account on a Platform, identified by its platform-specific name or id (
 _Avoid_: Channel, profile, page, Watched Handle, Public Handle
 
 **Authorization**:
-An owner's grant allowing the harvester to read Private Data for one or more Handles on a Platform. It can expire or be revoked.
+An owner's grant allowing the harvester to read Private Data for one Handle. It is Active while it works; it ends as Expired (stopped working without the owner withdrawing; can be reconnected, and becomes Revoked if not reconnected in time), Revoked (consent withdrawn, or the Handle disconnected by staff) or Replaced (a newer Authorization for the same Handle took over). Each grant is a new Authorization; a Handle has at most one Active one.
 _Avoid_: Connection, link, token (the token is an implementation detail of an Authorization)
 
 **Authorized Handle**:
-A Handle covered by an active Authorization; both Public and Private Data are collected for it. When the Authorization ends, it reverts to a plain Handle and keeps its history.
+A Handle covered by an Active Authorization; both Public and Private Data are collected for it. When the Authorization ends, it stays tracked as a plain Handle and keeps whatever history its Platform's rules allow (a Revoked Authorization can require deleting the data fetched under it).
 _Avoid_: Connected Account, Private Handle, Linked Handle
 
 **Platform Login**:
 The way an owner logs into one Platform to grant an Authorization, offered as one "Connect" option per Platform (e.g. Connect Instagram). Each Platform has its own, even when two Platforms share the same company login behind the scenes.
 _Avoid_: Login (on its own), Authorizer, Connect Flow, Login Provider
+
+**Connect Link**:
+A short-lived link, scoped to one Brand, that lets an account owner who is not a user of the harvester run Platform Logins and grant Authorizations; the accounts they connect land under that Brand.
+_Avoid_: Invite, onboarding link
+
+**System Credential**:
+Access that belongs to us rather than to an account owner, used to read Public Data (e.g. the Instagram account we own for looking up other accounts, a Platform API key). It is not an Authorization and covers no Handle.
+_Avoid_: Service account, app token, Authorization
 
 ### Data
 
