@@ -1,0 +1,3 @@
+# One Tracking Window, rescanned in full on every Collection Run
+
+Each Handle has a single Tracking Window (days, default 14), and every Collection Run re-reads all Posts published within it: new ones are collected, known ones refreshed with a new Metric Snapshot. We rejected separate "history" and "refresh" windows because one number is easier to reason about, and a full rescan makes any outage shorter than the window self-healing with no "since last run" bookkeeping. Catch-up beyond the window (e.g. 100 days after a long outage) uses a Tracking Window Override on a single manual run, so the setting is never temporarily edited and forgotten. We accept the extra API quota this costs. See [the map](https://github.com/rahmed12/socialMediaHarvester/issues/1).

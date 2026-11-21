@@ -1,0 +1,81 @@
+# Social Media Harvester
+
+Collects posts and engagement data from social media platforms for a set of tracked handles, and stores it for later viewing and analysis.
+
+## Language
+
+### Sources
+
+**Platform**:
+A social media service the harvester collects from (e.g. YouTube, Facebook, Instagram; later TikTok, X).
+_Avoid_: Network, provider, site
+
+**Brand**:
+A real-world organization or person whose Handles are grouped together across Platforms (e.g. the NBA).
+_Avoid_: Client, entity, company, team
+
+**Handle**:
+A single account on a Platform, identified by its platform-specific name or id (e.g. `@NBA` on YouTube). By default only its Public Data is collected.
+_Avoid_: Channel, profile, page, Watched Handle, Public Handle
+
+**Authorization**:
+An owner's grant allowing the harvester to read Private Data for one or more Handles on a Platform. It can expire or be revoked.
+_Avoid_: Connection, link, token (the token is an implementation detail of an Authorization)
+
+**Authorized Handle**:
+A Handle covered by an active Authorization; both Public and Private Data are collected for it. When the Authorization ends, it reverts to a plain Handle and keeps its history.
+_Avoid_: Connected Account, Private Handle, Linked Handle
+
+### Data
+
+**Public Data**:
+Content and metrics any viewer of the Platform can see, such as posts and their public like/comment/view counts.
+
+**Private Data**:
+Data the Platform only releases to the Handle's owner, obtained solely through an Authorization (e.g. insights, reach, audience demographics).
+_Avoid_: Scraped data, hidden data
+
+**Post**:
+A single piece of content published by a Handle (video, photo, reel, status), as we store it in a shape common to all Platforms. It always reflects the latest Raw Payload received for it; its metrics live in its Metric Snapshots, not on the Post.
+_Avoid_: Item, content, media
+
+**Post Type**:
+The normalized category of a Post, the same set across all Platforms (video, short, live, image, carousel, reel, text, link, or unknown when the Platform doesn't reveal it). The Platform's own type label is kept next to it.
+_Avoid_: Kind, media type, format
+
+**Unavailable Post**:
+A previously collected Post that the Platform no longer returns (deleted, made private, or removed). It keeps its history but receives no new Metric Snapshots.
+_Avoid_: Deleted post, missing post
+
+**Raw Payload**:
+The Platform's response for a Post from one fetch, exactly as received. It is the source of truth: the Post and each Metric Snapshot are derived from Raw Payloads and can be re-derived from them.
+_Avoid_: Source JSON, original
+
+**Metric Snapshot**:
+The engagement counts (views, likes, comments, etc.) of a Post as observed at one moment, from a single fetch of either Public Data or Private Data, never both. A count the Platform didn't give is recorded as not given, never as zero. Snapshots accumulate: a new observation always adds a new snapshot and never replaces an earlier one.
+_Avoid_: Stats, current metrics
+
+**Handle Snapshot**:
+The account-wide counts of a Handle (followers, subscribers, number of posts) as observed during one Collection Run. Like Metric Snapshots, they accumulate.
+_Avoid_: Profile stats, account stats
+
+### Collection
+
+**Collection Run**:
+One pass over a Handle that collects every Post within its Tracking Window and records a Metric Snapshot for each.
+_Avoid_: Sync, crawl, scrape, job
+
+**Tracking Window**:
+How many days back from now a Collection Run looks: every Post published within it is collected if new and refreshed if already known (default 14 days).
+_Avoid_: History Window, backfill period, refresh period, lookback
+
+**Tracking Window Override**:
+A different Tracking Window given to a single manually triggered Collection Run (e.g. 100 days to catch up after a long outage); the Handle's Tracking Window itself is unchanged.
+_Avoid_: Backfill, temporary window
+
+**Tracked Post**:
+A Post published within its Handle's Tracking Window; it receives a new Metric Snapshot on each Collection Run.
+
+**Frozen Post**:
+A Post older than its Handle's Tracking Window; it keeps its past Metric Snapshots but receives no new ones.
+_Avoid_: Archived post, stale post
