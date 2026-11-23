@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/*secrets*.env)",
+      "Read(//**/.env)",
+      "Read(//**/*secrets*.env)",
+      "Read(//proc/**)",
+      "Edit(//workspaces/audiobook-ai-docker-image/.devcontainer/**)",
+      "Write(//workspaces/audiobook-ai-docker-image/.devcontainer/**)",
+      "Bash(env)",
+      "Bash(env:*)",
+      "Bash(printenv)",
+      "Bash(printenv:*)",
+      "Bash(set)",
+      "Bash(export -p)",
+      "Bash(*PLATFORM_SEC_*)",
+      "Bash(*/proc/*/environ*)"
+    ]
+  }
+}
