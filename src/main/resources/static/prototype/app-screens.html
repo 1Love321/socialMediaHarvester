@@ -1,0 +1,496 @@
+<!doctype html>
+<!--
+  PROTOTYPE — THROWAWAY. Lives only on branch prototype/app-screens. Never merge.
+  Question (wayfinder ticket "What screens does the app have?", issue #25):
+    What screens does the internal app have, and what does each show to each role?
+  Plan: three structurally different app layouts (A/B/C) over the same mock data,
+    switchable from the floating bottom bar (or ← / → keys), plus a role switcher
+    (Viewer / Operator / Admin) and a toggle for how unpermitted actions appear.
+  Run: double-click this file, or `./mvnw spring-boot:run` and open /prototype/app-screens.html
+  Everything is in-memory mock data; buttons are stubs.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PROTOTYPE · Harvester screens</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.4 system-ui, sans-serif; color: #222; background: #f4f4f4; }
+  a { color: #1a55c4; text-decoration: none; } a:hover { text-decoration: underline; }
+  h1 { font-size: 20px; margin: 0 0 12px; } h2 { font-size: 16px; margin: 20px 0 8px; } h3 { font-size: 14px; margin: 14px 0 6px; }
+  .box { background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 12px; margin-bottom: 12px; }
+  table { border-collapse: collapse; width: 100%; background: #fff; }
+  th, td { border-bottom: 1px solid #e3e3e3; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #eee; font-weight: 600; font-size: 12px; }
+  button { font: inherit; padding: 3px 10px; border: 1px solid #888; background: #fafafa; border-radius: 3px; cursor: pointer; margin: 0 4px 2px 0; }
+  button.primary { background: #333; color: #fff; border-color: #333; }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+  .chip { display: inline-block; padding: 0 6px; border-radius: 8px; font-size: 11px; border: 1px solid #999; background: #fff; white-space: nowrap; }
+  .ok { border-color: #3a3; color: #262; } .warn { border-color: #c80; color: #960; background: #fff8e8; } .bad { border-color: #c33; color: #a22; background: #fdeeee; } .muted { color: #888; }
+  .row { display: flex; gap: 12px; align-items: flex-start; } .grow { flex: 1; min-width: 0; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; } .filters select, .filters input { font: inherit; padding: 2px 4px; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #aaa; margin-bottom: 12px; }
+  .tabs a { padding: 6px 12px; border: 1px solid transparent; border-bottom: 0; }
+  .tabs a.on { border-color: #aaa; background: #fff; border-radius: 4px 4px 0 0; margin-bottom: -1px; color: #000; font-weight: 600; }
+  .banner { padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; border: 1px solid; }
+  .note { font-size: 12px; color: #666; font-style: italic; }
+  .q { background: #ffffd8; border: 1px dashed #bb0; padding: 4px 8px; font-size: 12px; margin: 6px 0; }
+  .q::before { content: "OPEN QUESTION: "; font-weight: 700; }
+  svg text { font-size: 10px; fill: #555; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .modal { background: #fff; padding: 16px 20px; border-radius: 6px; width: 460px; }
+  .modal label { display: block; margin: 6px 0; }
+  .toast { position: fixed; top: 12px; right: 12px; background: #333; color: #fff; padding: 8px 12px; border-radius: 4px; z-index: 60; }
+  /* Variant A */
+  .A-shell { display: flex; min-height: 100vh; }
+  .A-side { width: 200px; background: #2b2f36; color: #ccc; padding: 12px 0; flex-shrink: 0; }
+  .A-side a { display: block; color: #ddd; padding: 5px 16px; } .A-side a.on { background: #444b55; color: #fff; }
+  .A-side .sec { font-size: 11px; text-transform: uppercase; color: #888; padding: 12px 16px 4px; }
+  .A-main { flex: 1; padding: 16px 24px 80px; min-width: 0; }
+  /* Variant B */
+  .B-top { background: #fff; border-bottom: 1px solid #ccc; padding: 8px 24px; display: flex; align-items: center; gap: 16px; }
+  .B-main { max-width: 1000px; margin: 0 auto; padding: 16px 24px 80px; }
+  .B-crumb { font-size: 13px; color: #666; margin-bottom: 8px; }
+  .B-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  /* Variant C */
+  .C-top { background: #1d3557; color: #fff; padding: 0 16px; display: flex; align-items: stretch; gap: 4px; }
+  .C-top a { color: #cfe; padding: 10px 14px; display: block; } .C-top a.on { background: #f4f4f4; color: #000; }
+  .C-main { padding: 16px 24px 80px; }
+  .C-drawer { width: 520px; flex-shrink: 0; background: #fff; border-left: 3px solid #1d3557; padding: 12px; }
+  .C-facets { width: 200px; flex-shrink: 0; } .C-facets label { display: block; font-size: 13px; }
+  .gauge { height: 10px; background: #e5e5e5; border-radius: 5px; overflow: hidden; position: relative; }
+  .gauge > div { height: 100%; background: #4a7; } .gauge > span { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(45deg,#bbb,#bbb 3px,#ddd 3px,#ddd 6px); }
+  /* Switcher */
+  .proto-bar { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); background: #ff2d87; color: #fff; padding: 6px 14px; border-radius: 22px; box-shadow: 0 4px 14px rgba(0,0,0,.35); display: flex; gap: 10px; align-items: center; z-index: 100; font-size: 13px; white-space: nowrap; }
+  .proto-bar button { background: #fff; border: 0; color: #c0105c; font-weight: 700; margin: 0; }
+  .proto-bar select { font: inherit; }
+  .proto-bar a { color: #fff; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ---------------------------------------------------------------- mock data
+const PLAT = {
+  youtube:   { name: 'YouTube',   limit: 'units today',        used: 6120, cap: 10000, reserve: 1000 },
+  instagram: { name: 'Instagram', limit: '% app usage (hour)', used: 64,   cap: 100,   reserve: 15 },
+  facebook:  { name: 'Facebook',  limit: '% app usage (hour)', used: 9,    cap: 100,   reserve: 15 },
+};
+const BRANDS = [
+  { id: 'nba',   name: 'NBA' },
+  { id: 'reel',  name: 'Reeltedt (our test Page)' },
+  { id: 'salah', name: 'Salah M (test)' },
+  { id: 'nike',  name: 'Nike' },
+];
+const HANDLES = [
+  { id: 'yt-nba',   brand: 'nba',   p: 'youtube',   name: '@NBA',           auth: null, state: 'ok',      sched: 'Daily 01:00, 17:00', slot: '01:00 → 01:10 slot (cost ~180 units)', win: 14, last: ['Completed', 'Today 17:04'], next: 'Tomorrow 01:00', posts: 574, followers: 23.4e6 },
+  { id: 'ig-nba',   brand: 'nba',   p: 'instagram', name: 'nba',            auth: null, state: 'pressure',sched: 'Daily 09:20',        slot: 'moved 09:20 → 10:40 (Rate Limit)', win: 14, last: ['Partial', 'Today 09:31'], next: 'Fresh run queued', posts: 212, followers: 91e6 },
+  { id: 'fb-reel',  brand: 'reel',  p: 'facebook',  name: 'Instagram reeltedt', auth: { s: 'Active', since: '2026-10-02', by: 'owner of the Page (via Connect Link)' }, state: 'ok', sched: 'Daily 06:00', slot: '06:00 slot', win: 14, last: ['Completed', 'Today 06:02'], next: 'Tomorrow 06:00', posts: 31, followers: 120 },
+  { id: 'ig-reel',  brand: 'reel',  p: 'instagram', name: 'reeltedt',       auth: { s: 'Active', since: '2026-10-02', by: 'owner of the Page (via Connect Link)' }, state: 'ok', sched: 'Daily 06:10', slot: '06:10 slot', win: 14, last: ['Completed', 'Today 06:12'], next: 'Tomorrow 06:10', posts: 18, followers: 85 },
+  { id: 'yt-salah', brand: 'salah', p: 'youtube',   name: '@salahm8765',    auth: { s: 'Expired', since: '2026-11-20', by: 'channel owner', revokedIn: 17 }, state: 'ok', sched: 'Daily 03:00', slot: '03:00 slot', win: 14, last: ['Completed', 'Today 03:01'], next: 'Tomorrow 03:00', posts: 12, followers: 40 },
+  { id: 'yt-nike',  brand: 'nike',  p: 'youtube',   name: '@nike',          auth: null, state: 'stale',   sched: 'Daily 12:00',        slot: '12:00 slot', win: 14, last: ['Failed', '2 days ago 12:03'], next: 'Today 12:00 (missed: app was down)', posts: 301, followers: 2.1e6 },
+  { id: 'ig-nike',  brand: 'nike',  p: 'instagram', name: 'nikee_official', auth: null, state: 'stopped', stopReason: 'Platform says: unknown username (code 110 / 2207013)', sched: 'Daily 12:20 (halted)', slot: '—', win: 14, last: ['Failed', '5 days ago'], next: '— (Stopped)', posts: 0, followers: null },
+];
+const TYPES = { youtube: ['video', 'short', 'live'], instagram: ['reel', 'image', 'carousel'], facebook: ['text', 'link', 'video'] };
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const POSTS = [];
+HANDLES.filter(h => h.state !== 'stopped').forEach(h => {
+  for (let i = 0; i < 5; i++) {
+    const age = Math.floor(rnd() * 40) + i;
+    const st = age > h.win ? 'Frozen' : 'Tracked';
+    POSTS.push({
+      id: h.id + '-' + i, h: h.id, type: TYPES[h.p][i % 3],
+      title: ['Top 10 plays', 'Behind the scenes', 'Game recap', 'Q&A live', 'Launch day'][i],
+      age, state: i === 4 && h.id === 'yt-nba' ? 'Unavailable' : st,
+      views: h.p === 'facebook' ? null : Math.round(rnd() * 900000 * (h.followers > 1e6 ? 1 : .001)),
+      likes: Math.round(rnd() * 40000 * (h.followers > 1e6 ? 1 : .001)),
+      comments: Math.round(rnd() * 3000 * (h.followers > 1e6 ? 1 : .01)),
+      src: h.auth && h.auth.s === 'Active' ? 'Private' : 'Public',
+    });
+  }
+});
+const RUNS = [
+  { h: 'yt-nba',   trig: 'Scheduled', s: 'Completed', start: 'Today 17:00', dur: '4m', posts: '41 new / 533 refreshed', cost: '182 units' },
+  { h: 'ig-nba',   trig: 'Scheduled', s: 'Partial',   start: 'Today 09:20', dur: '11m', posts: '3 new / 96 refreshed (stopped: Rate Limit)', cost: '38% hour' },
+  { h: 'yt-salah', trig: 'Scheduled', s: 'Completed', start: 'Today 03:00', dur: '20s', posts: '0 new / 12 refreshed (Public only: Authorization Expired)', cost: '2 units' },
+  { h: 'fb-reel',  trig: 'Scheduled', s: 'Completed', start: 'Today 06:00', dur: '8s',  posts: '1 new / 30 refreshed', cost: '1% hour' },
+  { h: 'yt-nba',   trig: 'Manual (Operator, window 100 d)', s: 'Completed', start: 'Yesterday 14:12', dur: '19m', posts: '0 new / 2,104 refreshed', cost: '460 units' },
+  { h: 'yt-nike',  trig: 'Scheduled', s: 'Failed',    start: '2 days ago 12:00', dur: '3m', posts: 'error persisted after 3 retries: HTTP 500', cost: '6 units' },
+  { h: 'ig-nike',  trig: 'Scheduled', s: 'Failed',    start: '5 days ago 12:20', dur: '1s', posts: 'Stopped Handle: unknown username', cost: '0' },
+];
+const QUEUE = [
+  { h: 'ig-nba', why: 'Fresh run after Partial', eta: 'when Instagram Rate Limit allows (~10:40)' },
+  { h: 'yt-nba', why: 'Scheduled 01:00', eta: 'Tomorrow 01:00' },
+];
+let ALERTS = [
+  { id: 1, kind: 'Failed run',            what: 'yt-nike', text: 'Collection Run failed after retries (HTTP 500)', since: '2 days ago', st: 'Open' },
+  { id: 2, kind: 'Stale Handle',          what: 'yt-nike', text: 'No Completed run for 2× its schedule interval (48 h)', since: 'Today 12:00', st: 'Open' },
+  { id: 3, kind: 'Stopped Handle',        what: 'ig-nike', text: 'Unknown username: check the Handle name, then restart', since: '5 days ago', st: 'Acknowledged by bob' },
+  { id: 4, kind: 'Expired Authorization', what: 'yt-salah', text: 'Owner must reconnect. Becomes Revoked in 17 days', since: '4 days ago', st: 'Open' },
+  { id: 5, kind: 'Rate Limit pressure',   what: 'ig-nba', text: 'Instagram: 3 Handles moved to later slots; Partial run not completed', since: 'Today 09:31', st: 'Open' },
+  { id: 6, kind: 'Failed run',            what: 'fb-reel', text: 'Collection Run failed (timeout)', since: 'Yesterday', st: 'Closed itself: next run Completed' },
+];
+const DELETIONS = [
+  { when: 'Today 03:00 → 03:04', why: 'Retention: YouTube Public Data, 30 days', scope: 'YouTube · Frozen Posts of plain Handles', amount: '112 Posts, 3,410 Metric Snapshots' },
+  { when: 'Today 03:00 → 03:02', why: 'Retention: Raw Payloads, 30 days (latest kept)', scope: 'All Platforms', amount: '8,200 Raw Payloads' },
+  { when: '2026-11-12 03:00 → 03:00', why: 'Revoked Authorization (7-day deadline)', scope: 'YouTube · @oldtest (Private Data)', amount: '14 Posts, 220 Private Metric Snapshots' },
+  { when: '2026-11-03 10:15 → 10:16', why: 'Meta Data Deletion Request', scope: 'Instagram · formerowner (Private Data only)', amount: '61 Private Metric Snapshots' },
+];
+const USERS = [
+  { email: 'alice@team', role: 'Admin', last: 'Today 08:10' },
+  { email: 'bob@team',   role: 'Operator', last: 'Today 09:40' },
+  { email: 'carol@team', role: 'Viewer', last: '3 days ago' },
+];
+const LINKS = [
+  { brand: 'reel',  by: 'alice@team', created: '2026-10-02 10:00', exp: 'used: 2 Authorizations granted' },
+  { brand: 'salah', by: 'alice@team', created: 'Today 11:02', exp: 'expires in 41 min · unused' },
+];
+const hOf = id => HANDLES.find(h => h.id === id);
+const bOf = id => BRANDS.find(b => b.id === id);
+const pOf = id => POSTS.find(p => p.id === id);
+const fmt = n => n == null ? '<span class="muted" title="not given by the Platform">—</span>' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? Math.round(n / 1e3) + 'k' : n.toLocaleString();
+
+// ---------------------------------------------------------------- state & routing
+const VARIANTS = { A: 'Sidebar sections', B: 'Brand drill-down', C: 'Ops console + explorers' };
+const HOME = { A: '/brands', B: '/', C: '/overview' };
+const S = { v: 'A', role: 'Admin', dis: 'hide', path: '/', modal: null, toast: null, f: { brand: '', p: '', type: '', st: '' } };
+function readHash() {
+  const [path, qs] = location.hash.slice(1).split('?');
+  const q = new URLSearchParams(qs || '');
+  S.v = VARIANTS[q.get('v')] ? q.get('v') : 'A';
+  S.role = ['Viewer', 'Operator', 'Admin'].includes(q.get('role')) ? q.get('role') : 'Admin';
+  S.dis = q.get('dis') === 'show' ? 'show' : 'hide';
+  S.path = path || HOME[S.v];
+}
+const L = (path, over = {}) => '#' + path + '?' + new URLSearchParams({ v: over.v || S.v, role: over.role || S.role, dis: over.dis || S.dis });
+const go = (path, over) => { location.hash = L(path, over).slice(1); };
+
+const RANK = { Viewer: 0, Operator: 1, Admin: 2 };
+const NEED = { run: 'Operator', alerts: 'Operator', restart: 'Operator', limits: 'Operator', edit: 'Admin', connect: 'Admin', admin: 'Admin' };
+const can = a => RANK[S.role] >= RANK[NEED[a]];
+function btn(action, label, onclick, cls = '') {
+  if (can(action)) return `<button class="${cls}" onclick="${onclick}">${label}</button>`;
+  if (S.dis === 'show') return `<button class="${cls}" disabled title="Needs ${NEED[action]}">${label}</button>`;
+  return '';
+}
+const stub = msg => `toast('Stub: ${msg.replace(/'/g, '')}')`;
+function toast(m) { S.toast = m; render(); setTimeout(() => { S.toast = null; render(); }, 1800); }
+function openRun(scope) { S.modal = { type: 'run', scope }; render(); }
+function openForm(kind) { S.modal = { type: 'form', kind }; render(); }
+function closeModal() { S.modal = null; render(); }
+function denied(need) { return `<div class="box"><h1>Not available</h1>This screen needs the <b>${need}</b> role. You are a ${S.role}.<div class="q">Hide such pages entirely from nav (current) and show this page only on a direct link?</div></div>`; }
+
+// ---------------------------------------------------------------- chips
+const platChip = p => `<span class="chip">${PLAT[p].name}</span>`;
+const runChip = s => `<span class="chip ${s === 'Completed' ? 'ok' : s === 'Partial' ? 'warn' : 'bad'}">${s}</span>`;
+function authChip(h) {
+  if (!h.auth) return '<span class="chip muted">Public only</span>';
+  if (h.auth.s === 'Active') return '<span class="chip ok">Authorized</span>';
+  return `<span class="chip warn">Authorization Expired · Revoked in ${h.auth.revokedIn} d</span>`;
+}
+function stateChip(h) {
+  return { ok: '<span class="chip ok">Collecting</span>', stale: '<span class="chip bad">Stale</span>', stopped: '<span class="chip bad">Stopped</span>', pressure: '<span class="chip warn">Delayed by Rate Limit</span>' }[h.state];
+}
+const postState = s => `<span class="chip ${s === 'Tracked' ? 'ok' : s === 'Unavailable' ? 'bad' : ''}">${s}</span>`;
+
+// ---------------------------------------------------------------- charts (rough SVG)
+function series(h, metric, days) {
+  let v = metric === 'followers' ? (h.followers || 100) * .97 : 0, out = [];
+  const big = h.followers > 1e6 ? 1 : .001, step = { views: 90000, likes: 4000, comments: 300, followers: (h.followers || 100) * .0006 }[metric] * (metric === 'followers' ? 1 : big);
+  for (let i = 0; i < days; i++) { v += step * (0.5 + rnd()); out.push(v); }
+  return out;
+}
+function chart(lines, { w = 440, h = 120, stacked = false, markers = [], title = '' } = {}) {
+  const n = lines[0].vals.length; let acc = new Array(n).fill(0);
+  const tops = lines.map(l => { const t = l.vals.map((v, i) => (stacked ? acc[i] : 0) + v); if (stacked) acc = t; return t; });
+  const max = Math.max(...tops.flat()) || 1, X = i => 30 + i * (w - 40) / (n - 1), Y = v => h - 18 - v * (h - 30) / max;
+  const colors = ['#1a55c4', '#d2691e', '#2a9d8f', '#9b2c9b'];
+  let svg = `<svg width="${w}" height="${h}" style="background:#fff;border:1px solid #ddd"><text x="4" y="11">${title}</text>`;
+  let prev = new Array(n).fill(0);
+  tops.forEach((t, k) => {
+    const pts = t.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
+    if (stacked) {
+      const base = prev.map((v, i) => `${X(i)},${Y(v)}`).reverse().join(' ');
+      svg += `<polygon points="${pts} ${base}" fill="${colors[k]}" fill-opacity=".35" stroke="${colors[k]}"/>`; prev = t;
+    } else svg += `<polyline points="${pts}" fill="none" stroke="${colors[k]}" stroke-width="1.5"/>`;
+  });
+  markers.forEach(m => svg += `<line x1="${X(m.i)}" x2="${X(m.i)}" y1="14" y2="${h - 18}" stroke="#c00" stroke-dasharray="3 2"/><text x="${X(m.i) + 3}" y="24" style="fill:#c00">${m.label}</text>`);
+  svg += `<text x="30" y="${h - 4}">${n} days ago</text><text x="${w - 40}" y="${h - 4}">today</text>`;
+  const legend = lines.length > 1 ? `<div style="font-size:11px">${lines.map((l, k) => `<span style="color:${colors[k]}">■</span> ${l.name}`).join(' &nbsp; ')}</div>` : '';
+  return svg + '</svg>' + legend;
+}
+function handleCharts(h, w = 440) {
+  const days = h.p === 'youtube' && !h.auth ? 44 : 60;
+  const markers = h.id === 'yt-salah' ? [{ i: 15, label: '→ Private' }, { i: 55, label: '→ Public' }] : h.auth ? [{ i: 20, label: '→ Private' }] : [];
+  const metrics = h.p === 'facebook' ? ['likes', 'comments'] : ['views', 'likes', 'comments'];
+  return `<div class="note">Per day: sum of each Post's latest Metric Snapshot (Frozen Posts carried forward). One line per metric; Private value used where given, else Public. ${days === 44 ? 'Plain YouTube Handle: ~44 days of history by design.' : ''}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">${metrics.map(m => chart([{ name: m, vals: series(h, m, days) }], { w, title: m, markers })).join('')}
+    ${chart([{ name: 'followers', vals: series(h, 'followers', days) }], { w, title: (h.p === 'youtube' ? 'subscribers' : 'followers') + ' (Handle Snapshots)' })}</div>`;
+}
+function brandCharts(b, w = 440) {
+  const hs = HANDLES.filter(h => h.brand === b.id && h.state !== 'stopped');
+  const byP = {}; hs.forEach(h => (byP[h.p] = byP[h.p] || []).push(h));
+  return `<div class="note">Stacked per Handle. No totals across Platforms (a YouTube view isn't an Instagram view), so one chart per Platform. No growth figures.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">${Object.entries(byP).map(([p, list]) =>
+      chart(list.map(h => ({ name: h.name, vals: series(h, 'likes', 44) })), { w, stacked: true, title: PLAT[p].name + ' · likes' })).join('')}</div>
+    <div class="q">Metric picker (views / likes / comments) per Brand chart, or show every metric like the Handle page?</div>`;
+}
+
+// ---------------------------------------------------------------- shared building blocks
+function handleTable(list, { brandCol = true, link = id => L('/handle/' + id) } = {}) {
+  return `<table><tr><th>Handle</th><th>Platform</th>${brandCol ? '<th>Brand</th>' : ''}<th>Data</th><th>Status</th><th>Collection Schedule</th><th>Last run</th><th>Posts</th><th></th></tr>
+  ${list.map(h => `<tr><td><a href="${link(h.id)}">${h.name}</a></td><td>${platChip(h.p)}</td>${brandCol ? `<td>${bOf(h.brand).name}</td>` : ''}
+    <td>${authChip(h)}</td><td>${stateChip(h)}</td><td>${h.sched}</td><td>${runChip(h.last[0])} <span class="muted">${h.last[1]}</span></td><td>${h.posts}</td>
+    <td>${h.state === 'stopped' ? btn('restart', 'Restart', `openForm('restart')`) : btn('run', 'Run now', `openRun('Handle ${h.name}')`)}${btn('edit', 'Edit', `openForm('handle')`)}</td></tr>`).join('')}</table>`;
+}
+function postFilters(fixed = {}) {
+  const opt = (k, arr, lab) => `<select onchange="S.f.${k}=this.value;render()"><option value="">${lab}: any</option>${arr.map(([v, t]) => `<option value="${v}" ${S.f[k] === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+  return `<div class="filters">
+    ${fixed.brand || fixed.h ? '' : opt('brand', BRANDS.map(b => [b.id, b.name]), 'Brand')}
+    ${fixed.h ? '' : opt('p', Object.entries(PLAT).map(([k, v]) => [k, v.name]), 'Platform')}
+    ${opt('type', ['video', 'short', 'live', 'reel', 'image', 'carousel', 'text', 'link'].map(t => [t, t]), 'Post Type')}
+    ${opt('st', ['Tracked', 'Frozen', 'Unavailable'].map(t => [t, t]), 'State')}
+    <label>Published <input type="date" value="2026-10-25"> – <input type="date" value="2026-11-24"></label>
+    <select><option>Sort: newest</option><option>Sort: most views</option><option>Sort: most likes</option></select></div>`;
+}
+function filteredPosts(fixed = {}) {
+  return POSTS.filter(p => { const h = hOf(p.h);
+    return (!fixed.h || p.h === fixed.h) && (!fixed.brand || h.brand === fixed.brand) && (!S.f.brand || h.brand === S.f.brand) && (!S.f.p || h.p === S.f.p) && (!S.f.type || p.type === S.f.type) && (!S.f.st || p.state === S.f.st);
+  }).sort((a, b) => a.age - b.age);
+}
+function postsTable(list, { link = id => L('/post/' + id), handleCol = true } = {}) {
+  return `<table><tr><th>Published</th><th>Post</th>${handleCol ? '<th>Handle</th>' : ''}<th>Type</th><th>State</th><th>Views</th><th>Likes</th><th>Comments</th><th>Source</th></tr>
+  ${list.map(p => { const h = hOf(p.h); return `<tr><td>${p.age} d ago</td><td><a href="${link(p.id)}">${p.title}</a></td>${handleCol ? `<td>${platChip(h.p)} ${h.name}</td>` : ''}
+    <td>${p.type}</td><td>${postState(p.state)}</td><td>${fmt(p.views)}</td><td>${fmt(p.likes)}</td><td>${fmt(p.comments)}</td><td>${p.src}</td></tr>`; }).join('') || '<tr><td colspan="9" class="muted">No Posts match</td></tr>'}</table>
+  <div class="note">No free-text search (out of scope). "—" = not given by the Platform, never zero.</div>`;
+}
+function postDetail(p, w = 440) {
+  const h = hOf(p.h);
+  const snaps = [0, 1, 2, 3].map(i => ({ t: i === 0 ? 'Today 17:04' : `${i} d ago`, src: p.src, v: p.views == null ? null : Math.round(p.views * (1 - i * .08)), l: Math.round(p.likes * (1 - i * .07)), c: Math.round(p.comments * (1 - i * .05)) }));
+  if (h.auth) snaps.splice(1, 0, { t: 'Today 17:04', src: 'Public', v: p.views && Math.round(p.views * .99), l: p.likes, c: p.comments });
+  return `<h1>${p.title}</h1>
+  <div>${platChip(h.p)} ${h.name} · ${bOf(h.brand).name} · ${p.type} <span class="muted">(Platform label: ${p.type.toUpperCase()})</span> · ${postState(p.state)} · published ${p.age} d ago · <a href="#" onclick="${stub('opens the Post on the Platform')};return false">open on ${PLAT[h.p].name} ↗</a></div>
+  ${p.state === 'Unavailable' ? '<div class="banner bad">The Platform no longer returns this Post. No new snapshots; YouTube rules will delete it.</div>' : ''}
+  <h3>Metrics over time</h3>${chart([{ name: 'likes', vals: series(h, 'likes', 20) }], { w, title: 'likes' })}
+  <h3>Metric Snapshots</h3><table><tr><th>Observed</th><th>Source</th><th>Views</th><th>Likes</th><th>Comments</th></tr>
+  ${snaps.map(s => `<tr><td>${s.t}</td><td>${s.src}</td><td>${fmt(s.v)}</td><td>${fmt(s.l)}</td><td>${fmt(s.c)}</td></tr>`).join('')}</table>
+  <h3>Latest Raw Payload</h3><details><summary>fetched Today 17:04 · API v3</summary><pre style="background:#f8f8f8;padding:6px;font-size:11px">{ "id": "${p.id}", "snippet": { "title": "${p.title}" }, "statistics": { ... } }</pre></details>
+  <div class="q">Should Viewers see the Raw Payload, or only Admins?</div>`;
+}
+function scheduleBox(h) {
+  return `<div class="box"><b>Collection Schedule</b> ${btn('edit', 'Edit schedule', `openForm('schedule')`)}<br>
+    ${h.sched} (UTC) · auto-staggered: ${h.slot} · Tracking Window ${h.win} days<br>Next: ${h.next}
+    ${h.state === 'stopped' ? `<div class="banner bad" style="margin-top:8px"><b>Stopped Handle.</b> ${h.stopReason}. History kept; no scheduled runs. ${btn('edit', 'Fix Handle name', `openForm('handle')`)}${btn('restart', 'Restart', `openForm('restart')`, 'primary')}</div>` : ''}
+    ${h.state === 'stale' ? '<div class="banner bad" style="margin-top:8px">Stale: no Completed run for 2× the schedule interval. Missed runs are skipped, not caught up. Start a Manual Run to fill the gap.</div>' : ''}</div>`;
+}
+function authBox(h) {
+  if (!h.auth) return `<div class="box"><b>Authorization</b>: none. Public Data only. ${btn('connect', 'Create Connect Link for ' + bOf(h.brand).name, `openForm('link')`)}</div>`;
+  return `<div class="box"><b>Authorization</b>: ${authChip(h)} · granted ${h.auth.since} by ${h.auth.by}
+    ${h.auth.s === 'Expired' ? `<div class="banner warn" style="margin-top:6px">Stopped working on 2026-11-20. Collecting Public Data only. Becomes <b>Revoked</b> in ${h.auth.revokedIn} days (YouTube setting: 21), then Private Data is deleted within 7 days. Send the owner a new Connect Link.</div>` : ''}
+    <div style="margin-top:6px">${btn('connect', 'New Connect Link', `openForm('link')`)}${btn('connect', 'Disconnect (→ Revoked)', stub('Disconnect asks for confirmation; Private Data deleted per Platform rule'))}</div>
+    <div class="note">Earlier Authorizations for this Handle: 1 Replaced (2026-09-14).</div></div>`;
+}
+function runsTable(list, handleCol = true) {
+  return `<table><tr><th>Started</th>${handleCol ? '<th>Handle</th>' : ''}<th>Trigger</th><th>Result</th><th>Duration</th><th>Posts</th><th>Rate Limit used</th></tr>
+  ${list.map(r => `<tr><td>${r.start}</td>${handleCol ? `<td>${platChip(hOf(r.h).p)} ${hOf(r.h).name}</td>` : ''}<td>${r.trig}</td><td>${runChip(r.s)}</td><td>${r.dur}</td><td>${r.posts}</td><td>${r.cost}</td></tr>`).join('')}</table>`;
+}
+function queueTable() {
+  return `<table><tr><th>Queued</th><th>Why</th><th>Expected start</th></tr>${QUEUE.map(q => `<tr><td>${hOf(q.h).name}</td><td>${q.why}</td><td>${q.eta}</td></tr>`).join('')}</table>`;
+}
+function limitsBox() {
+  return Object.entries(PLAT).map(([k, p]) => `<div style="margin:6px 0"><b>${p.name}</b> <span class="muted">${p.used.toLocaleString()} / ${p.cap.toLocaleString()} ${p.limit}; ${p.reserve.toLocaleString()} held for Manual Runs</span>
+    <div class="gauge"><div style="width:${p.used / p.cap * 100}%;${p.used / p.cap > .6 ? 'background:#d90' : ''}"></div><span style="left:${100 - p.reserve / p.cap * 100}%;right:0"></span></div></div>`).join('')
+    + '<div class="note">Facebook non-owned Pages: off (facebook.public-pages-enabled = false) until Page Public Content Access.</div>';
+}
+function alertsTable(compact = false) {
+  const ack = id => `ALERTS.find(a=>a.id===${id}).st='Acknowledged by you';render()`;
+  return `<table><tr><th>Alert</th><th>Handle</th>${compact ? '' : '<th>Detail</th>'}<th>Since</th><th>State</th><th></th></tr>
+  ${ALERTS.map(a => `<tr style="${a.st.startsWith('Closed') ? 'color:#999' : ''}"><td><span class="chip ${a.st === 'Open' ? 'bad' : ''}">${a.kind}</span></td><td><a href="${L(S.v === 'C' ? '/handles/' + a.what : '/handle/' + a.what)}">${hOf(a.what).name}</a></td>
+    ${compact ? '' : `<td>${a.text}</td>`}<td>${a.since}</td><td>${a.st}</td><td>${a.st === 'Open' ? btn('alerts', 'Acknowledge', ack(a.id)) : ''}</td></tr>`).join('')}</table>
+  <div class="note">Alerts close themselves when the problem clears. Failed/missed daily purge alerts are also emailed to Admins (none right now: last purge Today 03:04 OK).</div>`;
+}
+function deletionBox() {
+  return `<table><tr><th>When</th><th>Why</th><th>Scope</th><th>Removed</th></tr>${DELETIONS.map(d => `<tr><td>${d.when}</td><td>${d.why}</td><td>${d.scope}</td><td>${d.amount}</td></tr>`).join('')}</table>
+  <div class="note">Never shows the deleted content itself. Daily purge: last run Today 03:00, OK. Next 2026-11-25 03:00.</div>`;
+}
+function purgeBox() {
+  return `<div class="box"><b>Whole-Platform purge</b> <span class="muted">deletes everything collected from one Platform (Admin only, typed confirmation)</span><br>
+    <select><option>YouTube</option><option>Instagram</option><option>Facebook</option></select> ${btn('admin', 'Purge…', stub('asks you to type the Platform name, then logs to the Deletion Log'))}</div>`;
+}
+function usersBox() {
+  return `<table><tr><th>Email</th><th>Role</th><th>Last login</th><th></th></tr>${USERS.map(u => `<tr><td>${u.email}</td><td><select><option ${u.role === 'Viewer' ? 'selected' : ''}>Viewer</option><option ${u.role === 'Operator' ? 'selected' : ''}>Operator</option><option ${u.role === 'Admin' ? 'selected' : ''}>Admin</option></select></td><td>${u.last}</td>
+    <td><button onclick="${stub('sets a temporary password; no reset email')}">Reset password</button><button onclick="${stub('disable account')}">Disable</button></td></tr>`).join('')}</table>
+    <div style="margin-top:8px"><button class="primary" onclick="openForm('user')">Add user</button> <span class="note">No self-signup. Actuator: <a href="#" onclick="${stub('opens /actuator, Admin only')};return false">/actuator</a></span></div>`;
+}
+function linksBox(brandId) {
+  const list = LINKS.filter(l => !brandId || l.brand === brandId);
+  return `<table><tr><th>Brand</th><th>Created by</th><th>Created</th><th>Status</th></tr>${list.map(l => `<tr><td>${bOf(l.brand).name}</td><td>${l.by}</td><td>${l.created}</td><td>${l.exp}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">None</td></tr>'}</table>
+    <div style="margin-top:6px">${btn('connect', 'Create Connect Link', `openForm('link')`, 'primary')}<span class="note">1-hour link; the owner chooses Connect YouTube / Instagram / Facebook; Handles land under the Brand.</span></div>`;
+}
+function authsTable() {
+  return `<table><tr><th>Handle</th><th>Brand</th><th>Authorization</th><th>Granted</th><th></th></tr>${HANDLES.filter(h => h.auth).map(h => `<tr><td>${platChip(h.p)} ${h.name}</td><td>${bOf(h.brand).name}</td><td>${authChip(h)}</td><td>${h.auth.since}</td>
+    <td>${btn('connect', 'Disconnect', stub('Disconnect → Revoked'))}</td></tr>`).join('')}</table>`;
+}
+function login() {
+  return `<div style="max-width:320px;margin:80px auto" class="box"><h1>Social Media Harvester</h1>
+    <label>Email<br><input style="width:100%"></label><br><label>Password<br><input type="password" style="width:100%"></label><br><br>
+    <button class="primary" onclick="go(HOME[S.v])">Log in</button><div class="note">No sign-up and no "forgot password": ask an Admin.</div></div>`;
+}
+function modal() {
+  if (!S.modal) return '';
+  let body;
+  if (S.modal.type === 'run') body = `<h2>Manual Run</h2><div>Scope: <b>${S.modal.scope}</b></div>
+    <label><input type="radio" name="sc" checked> This scope</label>
+    <label>Tracking Window Override (days, optional) <input type="number" placeholder="default 14" style="width:80px"></label>
+    <div class="note">Uses the Rate Limit reserve. Goes ahead of scheduled runs. Doesn't change any Collection Schedule.<br>Estimated cost: ~180 YouTube units (reserve left: 1,000).</div>
+    <button class="primary" onclick="closeModal();toast('Stub: Manual Run queued')">Start</button><button onclick="closeModal()">Cancel</button>`;
+  else body = {
+    schedule: `<h2>Edit Collection Schedule</h2><label>Times (UTC) <input value="01:00, 17:00"></label><label>Days <select><option>Every day</option><option>Weekdays</option><option>Mon, Thu</option></select></label><label>Tracking Window (days) <input value="14" style="width:60px"></label><div class="note">The app picks the exact 10-minute slot by expected cost.</div>`,
+    handle: `<h2>Add / edit Handle</h2><label>Brand <select>${BRANDS.map(b => `<option>${b.name}</option>`)}</select></label><label>Platform <select><option>YouTube</option><option>Instagram</option><option disabled>Facebook (non-owned Pages off until PPCA)</option></select></label><label>Handle <input placeholder="@name"></label><div class="note">Checked against the Platform before saving (Handle lookup).</div><label>Collection Schedule <input value="Daily 09:00"></label>`,
+    restart: `<h2>Restart Stopped Handle</h2><div>Clears Stopped and resumes the Collection Schedule. Runs once now to check.</div>`,
+    link: `<h2>Create Connect Link</h2><label>Brand <select>${BRANDS.map(b => `<option>${b.name}</option>`)}</select></label><div class="note">Valid 1 hour. Copy and send to the account owner.</div><input readonly style="width:100%" value="https://harvester.internal/connect/9f2c…">`,
+    user: `<h2>Add user</h2><label>Email <input></label><label>Role <select><option>Viewer</option><option>Operator</option><option>Admin</option></select></label><label>Temporary password <input></label>`,
+    brand: `<h2>Add Brand</h2><label>Name <input></label>`,
+  }[S.modal.kind] + `<br><button class="primary" onclick="closeModal();toast('Stub: saved')">Save</button><button onclick="closeModal()">Cancel</button>`;
+  return `<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${body}</div></div>`;
+}
+
+// ---------------------------------------------------------------- Variant A: sidebar sections, one page per object type, tabs on detail
+function variantA() {
+  const p = S.path.split('/').filter(Boolean), sec = p[0] || 'brands';
+  const nav = (path, label, act) => (!act || can(act)) ? `<a class="${('/' + sec) === path ? 'on' : ''}" href="${L(path)}">${label}</a>` : '';
+  const openAlerts = ALERTS.filter(a => a.st === 'Open').length;
+  const side = `<div class="A-side"><div style="padding:0 16px 12px;color:#fff;font-weight:700">Harvester</div>
+    <div class="sec">Data</div>${nav('/brands', 'Brands')}${nav('/handles', 'Handles')}${nav('/posts', 'Posts')}
+    ${can('run') ? '<div class="sec">Operate</div>' : ''}${nav('/alerts', `Alerts <span class="chip bad">${openAlerts}</span>`, 'alerts')}${nav('/runs', 'Collection Runs', 'run')}${nav('/limits', 'Rate Limits', 'limits')}
+    ${can('admin') ? '<div class="sec">Admin</div>' : ''}${nav('/authorizations', 'Authorizations & Connect Links', 'admin')}${nav('/deletions', 'Deletion Log & purge', 'admin')}${nav('/users', 'Users', 'admin')}
+    <div style="position:absolute;bottom:70px;padding:0 16px;font-size:12px">${S.role.toLowerCase()}@team · <a href="${L('/login')}" style="display:inline;padding:0">Log out</a></div></div>`;
+  const tabs = (base, list, cur) => `<div class="tabs">${list.filter(t => !t[2] || can(t[2])).map(([k, lab]) => `<a class="${cur === k ? 'on' : ''}" href="${L(base + '/' + k)}">${lab}</a>`).join('')}</div>`;
+  let main;
+  if (sec === 'brands') main = `<h1>Brands ${btn('edit', '+ Add Brand', `openForm('brand')`)}</h1><table><tr><th>Brand</th><th>Handles</th><th>Authorized</th><th>Problems</th></tr>
+    ${BRANDS.map(b => { const hs = HANDLES.filter(h => h.brand === b.id); return `<tr><td><a href="${L('/brand/' + b.id)}">${b.name}</a></td><td>${hs.map(h => platChip(h.p) + ' ' + h.name).join('<br>')}</td><td>${hs.filter(h => h.auth).length}</td><td>${hs.filter(h => h.state !== 'ok').map(stateChip).join(' ')}</td></tr>`; }).join('')}</table>`;
+  else if (sec === 'brand') { const b = bOf(p[1]), tab = p[2] || 'handles';
+    main = `<div class="muted"><a href="${L('/brands')}">Brands</a> ›</div><h1>${b.name} ${btn('run', 'Manual Run…', `openRun('Brand ${b.name}: all Platforms')`)}${btn('edit', 'Rename', `openForm('brand')`)}</h1>
+      ${tabs('/brand/' + b.id, [['handles', 'Handles'], ['charts', 'Charts'], ['links', 'Connect Links', 'connect']], tab)}
+      ${tab === 'handles' ? handleTable(HANDLES.filter(h => h.brand === b.id), { brandCol: false }) + '<br>' + btn('edit', '+ Add Handle', `openForm('handle')`) : tab === 'charts' ? brandCharts(b) : can('connect') ? linksBox(b.id) : denied('Admin')}`; }
+  else if (sec === 'handles') main = `<h1>Handles ${btn('edit', '+ Add Handle', `openForm('handle')`)}</h1>${handleTable(HANDLES)}`;
+  else if (sec === 'handle') { const h = hOf(p[1]), tab = p[2] || 'posts';
+    main = `<div class="muted"><a href="${L('/brands')}">Brands</a> › <a href="${L('/brand/' + h.brand)}">${bOf(h.brand).name}</a> ›</div>
+      <h1>${platChip(h.p)} ${h.name} ${authChip(h)} ${stateChip(h)} ${h.state === 'stopped' ? btn('restart', 'Restart', `openForm('restart')`) : btn('run', 'Run now…', `openRun('Handle ${h.name}')`)}</h1>
+      ${tabs('/handle/' + h.id, [['posts', 'Posts'], ['charts', 'Charts'], ['schedule', 'Schedule'], ['runs', 'Runs'], ['auth', 'Authorization']], tab)}
+      ${tab === 'posts' ? postFilters({ h: 1 }) + postsTable(filteredPosts({ h: h.id }), { handleCol: false }) : tab === 'charts' ? handleCharts(h) : tab === 'schedule' ? scheduleBox(h) : tab === 'runs' ? runsTable(RUNS.filter(r => r.h === h.id), false) : authBox(h)}`; }
+  else if (sec === 'posts') main = `<h1>Posts</h1>${postFilters()}${postsTable(filteredPosts())}`;
+  else if (sec === 'post') main = `<div class="muted"><a href="${L('/posts')}">Posts</a> ›</div>` + postDetail(pOf(p[1]));
+  else if (sec === 'alerts') main = can('alerts') ? `<h1>Alerts</h1>${alertsTable()}` : denied('Operator');
+  else if (sec === 'runs') main = can('run') ? `<h1>Collection Runs ${btn('run', 'Manual Run…', `openRun('choose: Handle / Brand on a Platform / Brand on all Platforms / whole Platform')`)}</h1><h3>Queue</h3>${queueTable()}<h3>Recent</h3>${runsTable(RUNS)}` : denied('Operator');
+  else if (sec === 'limits') main = can('limits') ? `<h1>Rate Limits</h1><div class="box">${limitsBox()}</div>` : denied('Operator');
+  else if (sec === 'authorizations') main = can('admin') ? `<h1>Authorizations</h1>${authsTable()}<h2>Connect Links</h2>${linksBox()}` : denied('Admin');
+  else if (sec === 'deletions') main = can('admin') ? `<h1>Deletion Log</h1>${deletionBox()}<br>${purgeBox()}` : denied('Admin');
+  else if (sec === 'users') main = can('admin') ? `<h1>Users</h1>${usersBox()}` : denied('Admin');
+  else main = 'Unknown page';
+  return `<div class="A-shell">${side}<div class="A-main">${main}</div></div>`;
+}
+
+// ---------------------------------------------------------------- Variant B: Brand drill-down, long scrolling pages, ops tucked in top-right
+function variantB() {
+  const p = S.path.split('/').filter(Boolean), sec = p[0] || '';
+  const openAlerts = ALERTS.filter(a => a.st === 'Open').length;
+  const top = `<div class="B-top"><a href="${L('/')}"><b>Harvester</b></a><span class="grow"></span>
+    ${can('alerts') ? `<a href="${L('/alerts')}">🔔 Alerts <span class="chip bad">${openAlerts}</span></a>` : ''}
+    ${can('admin') ? `<a href="${L('/admin')}">⚙ Admin</a>` : ''}<span class="muted">${S.role.toLowerCase()}@team</span><a href="${L('/login')}">Log out</a></div>`;
+  let main;
+  if (!sec) main = `<h1>Brands ${btn('edit', '+ Add Brand', `openForm('brand')`)}</h1>
+    ${can('alerts') && openAlerts ? `<div class="banner bad">${openAlerts} open alerts. <a href="${L('/alerts')}">Review →</a></div>` : ''}
+    <div class="B-cards">${BRANDS.map(b => { const hs = HANDLES.filter(h => h.brand === b.id); return `<div class="box"><a href="${L('/brand/' + b.id)}"><b style="font-size:16px">${b.name}</b></a>
+      ${hs.map(h => `<div style="margin-top:4px">${platChip(h.p)} <a href="${L('/handle/' + h.id)}">${h.name}</a> ${h.auth ? authChip(h) : ''} ${h.state !== 'ok' ? stateChip(h) : ''}</div>`).join('')}
+      <div style="margin-top:6px">${chart([{ name: 'likes', vals: series(hs[0], 'likes', 30) }], { w: 250, h: 50 })}</div></div>`; }).join('')}</div>`;
+  else if (sec === 'brand') { const b = bOf(p[1]), hs = HANDLES.filter(h => h.brand === b.id);
+    main = `<div class="B-crumb"><a href="${L('/')}">Brands</a> › ${b.name}</div><h1>${b.name}</h1>
+      <div class="box"><b>Handles</b> ${btn('edit', '+ Add Handle', `openForm('handle')`)}
+        ${hs.map(h => `<div style="display:flex;gap:8px;align-items:center;border-top:1px solid #eee;padding:6px 0">${platChip(h.p)} <a href="${L('/handle/' + h.id)}"><b>${h.name}</b></a> ${authChip(h)} ${stateChip(h)}
+          <span class="grow muted">${h.sched} · last ${h.last[0]} ${h.last[1]}</span>${h.state === 'stopped' ? btn('restart', 'Restart', `openForm('restart')`) : btn('run', 'Run', `openRun('Handle ${h.name}')`)}</div>`).join('')}
+        <div style="margin-top:6px">${btn('run', 'Run whole Brand…', `openRun('Brand ${b.name}: all Platforms (or pick one Platform)')`)}</div></div>
+      <h2>Charts</h2>${brandCharts(b, 300)}
+      <h2>Posts</h2>${postFilters({ brand: 1 })}${postsTable(filteredPosts({ brand: b.id }))}
+      ${can('connect') ? `<h2>Connect Links</h2>${linksBox(b.id)}` : ''}`; }
+  else if (sec === 'handle') { const h = hOf(p[1]);
+    main = `<div class="B-crumb"><a href="${L('/')}">Brands</a> › <a href="${L('/brand/' + h.brand)}">${bOf(h.brand).name}</a> › ${h.name}</div>
+      <h1>${platChip(h.p)} ${h.name} ${authChip(h)} ${stateChip(h)}</h1>
+      ${h.state === 'stopped' || h.state === 'stale' || (h.auth && h.auth.s === 'Expired') ? `<div class="banner bad">Needs attention: ${h.stopReason || (h.state === 'stale' ? 'no Completed run for 48 h' : 'Authorization Expired, Revoked in ' + h.auth.revokedIn + ' days')}
+        ${h.state === 'stopped' ? btn('restart', 'Restart', `openForm('restart')`, 'primary') : btn('run', 'Run now', `openRun('Handle ${h.name}')`, 'primary')}</div>` : `<div>${btn('run', 'Run now…', `openRun('Handle ${h.name}')`)}</div>`}
+      <h2>Charts</h2>${handleCharts(h, 300)}
+      <h2>Posts</h2>${postFilters({ h: 1 })}${postsTable(filteredPosts({ h: h.id }), { handleCol: false })}
+      <h2>Collection</h2>${scheduleBox(h)}<details><summary>Recent Collection Runs</summary>${runsTable(RUNS.filter(r => r.h === h.id), false)}</details>
+      <h2>Authorization</h2>${authBox(h)}`; }
+  else if (sec === 'post') { const po = pOf(p[1]), h = hOf(po.h);
+    main = `<div class="B-crumb"><a href="${L('/')}">Brands</a> › <a href="${L('/brand/' + h.brand)}">${bOf(h.brand).name}</a> › <a href="${L('/handle/' + h.id)}">${h.name}</a> › Post</div>` + postDetail(po); }
+  else if (sec === 'alerts') main = can('alerts') ? `<h1>Alerts</h1>${alertsTable()}<h2>Rate Limits</h2><div class="box">${limitsBox()}</div><h2>Run queue</h2>${queueTable()}<h3>All recent runs</h3>${runsTable(RUNS)}` : denied('Operator');
+  else if (sec === 'admin') main = can('admin') ? `<h1>Admin</h1><h2>Users</h2>${usersBox()}<h2>Authorizations</h2>${authsTable()}<h2>Connect Links</h2>${linksBox()}<h2>Deletion Log</h2>${deletionBox()}<br>${purgeBox()}` : denied('Admin');
+  else main = 'Unknown page';
+  return top + `<div class="B-main">${main}<div class="q">In this layout there's no global Posts list or Handles list: you always browse through a Brand. Enough?</div></div>`;
+}
+
+// ---------------------------------------------------------------- Variant C: ops console home + flat explorers with a side drawer
+function variantC() {
+  const p = S.path.split('/').filter(Boolean), sec = p[0] || 'overview';
+  const tab = (path, label, act) => (!act || can(act)) ? `<a class="${sec === path ? 'on' : ''}" href="${L('/' + path)}">${label}</a>` : '';
+  const top = `<div class="C-top"><b style="padding:10px 14px 10px 0">Harvester</b>${tab('overview', 'Overview')}${tab('posts', 'Posts')}${tab('handles', 'Handles & Brands')}${tab('runs', 'Runs', 'run')}${tab('admin', 'Admin', 'admin')}
+    <span class="grow"></span><a href="${L('/login')}">${S.role.toLowerCase()}@team · log out</a></div>`;
+  const drawer = (html, back) => `<div class="C-drawer"><div style="text-align:right"><a href="${L(back)}">✕ close</a></div>${html}</div>`;
+  let main;
+  if (sec === 'overview') {
+    if (can('alerts')) main = `<div class="row"><div class="grow"><h2 style="margin-top:0">Needs attention</h2>${alertsTable(true)}
+        <h2>Today's schedule (UTC, 10-min slots)</h2><div class="box" style="font-family:monospace;font-size:12px">
+        ${['01:00 @NBA ✔', '03:00 @salahm8765 ✔ (Public only)', '06:00 Instagram reeltedt (FB) ✔', '06:10 reeltedt (IG) ✔', '09:20 nba → moved 10:40 ⚠ Rate Limit', '12:00 @nike ✖ missed', '17:00 @NBA ✔'].map(x => `<div>${x}</div>`).join('')}</div></div>
+      <div style="width:360px"><h2 style="margin-top:0">Rate Limits</h2><div class="box">${limitsBox()}</div><h2>Queue</h2>${queueTable()}
+        <div style="margin-top:8px">${btn('run', 'Manual Run…', `openRun('choose: Handle / Brand on a Platform / Brand on all Platforms / whole Platform')`, 'primary')}</div></div></div>`;
+    else main = `<h2 style="margin-top:0">Newest Posts</h2>${postsTable(POSTS.slice().sort((a, b) => a.age - b.age).slice(0, 8), { link: id => L('/posts/' + id) })}
+      <h2>Brands</h2><div class="row">${BRANDS.map(b => `<div class="box"><a href="${L('/handles/brand-' + b.id)}"><b>${b.name}</b></a>${chart([{ name: 'likes', vals: series(HANDLES.find(h => h.brand === b.id), 'likes', 30) }], { w: 200, h: 50 })}</div>`).join('')}</div>
+      <div class="q">Viewers have no alerts, so their Overview is a "what's new" page. Useful, or send Viewers straight to Posts?</div>`;
+  }
+  else if (sec === 'posts') { const sel = p[1] && pOf(p[1]);
+    main = `<div class="row"><div class="C-facets box"><b>Filter</b>
+      ${BRANDS.map(b => `<label><input type="radio" name="fb" ${S.f.brand === b.id ? 'checked' : ''} onclick="S.f.brand='${b.id}';render()"> ${b.name}</label>`).join('')}<label><input type="radio" name="fb" ${!S.f.brand ? 'checked' : ''} onclick="S.f.brand='';render()"> all Brands</label><hr>
+      ${Object.entries(PLAT).map(([k, v]) => `<label><input type="radio" name="fp" ${S.f.p === k ? 'checked' : ''} onclick="S.f.p='${k}';render()"> ${v.name}</label>`).join('')}<label><input type="radio" name="fp" ${!S.f.p ? 'checked' : ''} onclick="S.f.p='';render()"> all Platforms</label><hr>
+      ${['Tracked', 'Frozen', 'Unavailable'].map(s => `<label><input type="radio" name="fs" ${S.f.st === s ? 'checked' : ''} onclick="S.f.st='${s}';render()"> ${s}</label>`).join('')}<label><input type="radio" name="fs" ${!S.f.st ? 'checked' : ''} onclick="S.f.st='';render()"> any state</label></div>
+      <div class="grow">${postsTable(filteredPosts(), { link: id => L('/posts/' + id) })}</div>${sel ? drawer(postDetail(sel, 480), '/posts') : ''}</div>`; }
+  else if (sec === 'handles') { const sel = p[1];
+    const groups = BRANDS.map(b => `<tr style="background:#e8eef6"><td colspan="9"><b>${b.name}</b> <a href="${L('/handles/brand-' + b.id)}">Brand charts</a> ${btn('run', 'Run Brand…', `openRun('Brand ${b.name}')`)} ${btn('connect', 'Connect Link', `openForm('link')`)}</td></tr>`
+      + handleTable(HANDLES.filter(h => h.brand === b.id), { brandCol: false, link: id => L('/handles/' + id) }).replace(/^<table><tr>.*?<\/tr>/, '').replace(/<\/table>$/, '')).join('');
+    let d = '';
+    if (sel && sel.startsWith('brand-')) { const b = bOf(sel.slice(6)); d = `<h1>${b.name}</h1>${brandCharts(b, 480)}${can('connect') ? '<h3>Connect Links</h3>' + linksBox(b.id) : ''}`; }
+    else if (sel) { const h = hOf(sel); d = `<h1>${platChip(h.p)} ${h.name}</h1>${authChip(h)} ${stateChip(h)}${scheduleBox(h)}${authBox(h)}${handleCharts(h, 480)}<h3>Runs</h3>${runsTable(RUNS.filter(r => r.h === h.id), false)}<div><a href="${L('/posts')}" onclick="S.f.brand='${h.brand}';S.f.p='${h.p}'">See this Handle's Posts →</a></div>`; }
+    main = `<div class="row"><div class="grow"><div style="margin-bottom:8px">${btn('edit', '+ Add Brand', `openForm('brand')`)}${btn('edit', '+ Add Handle', `openForm('handle')`)}</div>
+      <table><tr><th>Handle</th><th>Platform</th><th>Data</th><th>Status</th><th>Collection Schedule</th><th>Last run</th><th>Posts</th><th></th></tr>${groups}</table></div>${d ? drawer(d, '/handles') : ''}</div>`; }
+  else if (sec === 'runs') main = can('run') ? `<h2 style="margin-top:0">Queue</h2>${queueTable()}<h2>Recent Collection Runs</h2><div class="filters"><select><option>Result: any</option><option>Failed</option><option>Partial</option></select><select><option>Trigger: any</option><option>Manual</option></select></div>${runsTable(RUNS)}` : denied('Operator');
+  else if (sec === 'admin') { if (!can('admin')) main = denied('Admin'); else { const sub = p[1] || 'users';
+    main = `<div class="tabs">${[['users', 'Users'], ['auth', 'Authorizations & Connect Links'], ['deletions', 'Deletion Log & purge']].map(([k, l]) => `<a class="${sub === k ? 'on' : ''}" href="${L('/admin/' + k)}">${l}</a>`).join('')}</div>
+      ${sub === 'users' ? usersBox() : sub === 'auth' ? authsTable() + '<h2>Connect Links</h2>' + linksBox() : deletionBox() + '<br>' + purgeBox()}`; } }
+  else main = 'Unknown page';
+  return top + `<div class="C-main">${main}</div>`;
+}
+
+// ---------------------------------------------------------------- render + switcher
+function render() {
+  let page = S.path === '/login' ? login() : { A: variantA, B: variantB, C: variantC }[S.v]();
+  const keys = Object.keys(VARIANTS), i = keys.indexOf(S.v);
+  const prev = keys[(i + keys.length - 1) % keys.length], next = keys[(i + 1) % keys.length];
+  const bar = `<div class="proto-bar">PROTOTYPE
+    <button onclick="go(HOME['${prev}'],{v:'${prev}'})">◀</button><b>${S.v} · ${VARIANTS[S.v]}</b><button onclick="go(HOME['${next}'],{v:'${next}'})">▶</button>
+    | Role <select onchange="go(S.path,{role:this.value})">${['Viewer', 'Operator', 'Admin'].map(r => `<option ${r === S.role ? 'selected' : ''}>${r}</option>`).join('')}</select>
+    | Not allowed: <select onchange="go(S.path,{dis:this.value})"><option value="hide" ${S.dis === 'hide' ? 'selected' : ''}>hidden</option><option value="show" ${S.dis === 'show' ? 'selected' : ''}>greyed out</option></select>
+    | <a href="${L('/login')}">login screen</a></div>`;
+  document.getElementById('app').innerHTML = page + modal() + bar + (S.toast ? `<div class="toast">${S.toast}</div>` : '');
+}
+window.addEventListener('hashchange', () => { readHash(); S.modal = null; render(); });
+window.addEventListener('keydown', e => {
+  if (e.target.closest('input,textarea,select,[contenteditable]')) return;
+  const keys = Object.keys(VARIANTS), i = keys.indexOf(S.v);
+  if (e.key === 'ArrowRight') { const v = keys[(i + 1) % keys.length]; go(HOME[v], { v }); }
+  if (e.key === 'ArrowLeft') { const v = keys[(i + keys.length - 1) % keys.length]; go(HOME[v], { v }); }
+  if (e.key === 'Escape') closeModal();
+});
+readHash(); render();
+</script>
+</body>
+</html>
