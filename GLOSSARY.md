@@ -4,6 +4,20 @@ Collects posts and engagement data from social media platforms for a set of trac
 
 ## Language
 
+### People
+
+**Viewer**:
+A member of our team who can look at all Brands, Handles, Posts and their charts, but cannot start or change anything.
+_Avoid_: Reader, guest, Client
+
+**Operator**:
+A member of our team who can do everything a Viewer can, and also keeps collection running: starts Manual Runs, works the alert page and restarts Stopped Handles. Cannot change what is collected or deleted.
+_Avoid_: Staff, runner, support
+
+**Admin**:
+A member of our team who can do everything an Operator can, and also decides what is collected and deleted: manages Brands, Handles, Collection Schedules, Authorizations, purges and user accounts.
+_Avoid_: Staff, superuser, owner (an owner is the account holder who grants an Authorization)
+
 ### Sources
 
 **Platform**:
@@ -19,7 +33,7 @@ A single account on a Platform, identified by its platform-specific name or id (
 _Avoid_: Channel, profile, page, Watched Handle, Public Handle
 
 **Authorization**:
-An owner's grant allowing the harvester to read Private Data for one Handle. It is Active while it works; it ends as Expired (stopped working without the owner withdrawing; can be reconnected, and becomes Revoked if not reconnected within its Platform's set number of days), Revoked (consent withdrawn, or the Handle disconnected by staff) or Replaced (a newer Authorization for the same Handle took over). Each grant is a new Authorization; a Handle has at most one Active one.
+An owner's grant allowing the harvester to read Private Data for one Handle. It is Active while it works; it ends as Expired (stopped working without the owner withdrawing; can be reconnected, and becomes Revoked if not reconnected within its Platform's set number of days), Revoked (consent withdrawn, or the Handle disconnected by an Admin) or Replaced (a newer Authorization for the same Handle took over). Each grant is a new Authorization; a Handle has at most one Active one.
 _Avoid_: Connection, link, token (the token is an implementation detail of an Authorization)
 
 **Authorized Handle**:
@@ -94,7 +108,7 @@ A Handle's own set of clock times at which its regular Collection Runs start (e.
 _Avoid_: Cron, job, interval, frequency
 
 **Manual Run**:
-A Collection Run that staff start by hand rather than one from a Collection Schedule. It can cover one Handle, one Brand on one Platform, one Brand on all its Platforms, or a whole Platform; each Handle covered gets its own Collection Run, which goes ahead of scheduled runs. It may carry a Tracking Window Override and never changes anyone's Collection Schedule.
+A Collection Run that an Operator or Admin starts by hand rather than one from a Collection Schedule. It can cover one Handle, one Brand on one Platform, one Brand on all its Platforms, or a whole Platform; each Handle covered gets its own Collection Run, which goes ahead of scheduled runs. It may carry a Tracking Window Override and never changes anyone's Collection Schedule.
 _Avoid_: Ad-hoc run, forced sync, refresh now
 
 **Rate Limit**:
@@ -102,7 +116,7 @@ The cap a Platform puts on how much we may collect from it in a given period (e.
 _Avoid_: Quota (except when quoting a Platform's own docs or API), budget, allowance
 
 **Stopped Handle**:
-A Handle whose Collection Schedule has been halted because its Platform reported a lasting problem with it (e.g. unknown username, account gone). It gets no scheduled Collection Runs until staff act on it; its history is kept.
+A Handle whose Collection Schedule has been halted because its Platform reported a lasting problem with it (e.g. unknown username, account gone). It gets no scheduled Collection Runs until an Operator or Admin acts on it; its history is kept.
 _Avoid_: Disabled handle, dead handle, paused handle
 
 **Retention Refresh**:
