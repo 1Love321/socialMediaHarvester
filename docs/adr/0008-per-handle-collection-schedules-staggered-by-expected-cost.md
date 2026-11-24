@@ -1,0 +1,7 @@
+# Per-Handle Collection Schedules at UTC clock times, staggered by expected cost
+
+Each Handle has its own Collection Schedule: one or more UTC clock times plus a day rule (every day, certain weekdays, certain days of the month, or every N days from a start date). We chose this over one cadence per Platform, over intervals ("every 6 hours"), and over cron expressions, because staff think in clock times ("every day at 9am") and because the rate limits we live under (YouTube's 10,000 units/day, Instagram's app-wide ~2 minutes of response time per hour) punish everyone starting at once. Cron makes it trivial to pile hundreds of Handles onto `0 0 * * *`.
+
+To keep the load spread, the day is cut into 10-minute slots (per Platform), each owning an even share of the Platform's budget. A new or edited time moves forward to the first slot where the Handle's *expected cost* fits — measured by its last run's cost, or the Platform's average for a new Handle — not by counting Handles, since one @NBA-sized Handle can cost as much as ten small ones. There is no "pin exact time" override.
+
+Consequences: schedules are anchored to the clock, so late runs don't drift later ones; runs missed while the app was down are skipped (the next run rescans the full Tracking Window, ADR 0001); a schedule whose gap exceeds the Tracking Window is allowed but loses Posts in the gap, so the UI warns when one is saved. See [the decision](https://github.com/rahmed12/socialMediaHarvester/issues/11).

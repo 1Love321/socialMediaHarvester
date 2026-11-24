@@ -82,8 +82,12 @@ Everything a Harvester brings back for one Handle in one Collection Run: Raw Pay
 _Avoid_: Batch, result, fetch
 
 **Collection Run**:
-One pass over a Handle that collects every Post within its Tracking Window and records a Metric Snapshot for each.
+One pass over a Handle that collects every Post within its Tracking Window and records a Metric Snapshot for each. It ends Completed, Partial (stopped early because the Platform's quota ran out; what it collected is kept and the Handle gets a fresh run once quota returns) or Failed (an error persisted after retries; the Handle waits for its next scheduled run).
 _Avoid_: Sync, crawl, scrape, job
+
+**Collection Schedule**:
+A Handle's own set of clock times at which its regular Collection Runs start (e.g. every day at 09:00, or every day at 01:00 and 17:00). Each Handle has its own, so Handles start at different times. Manually triggered runs are not part of it and don't change it.
+_Avoid_: Cron, job, interval, frequency
 
 **Tracking Window**:
 How many days back from now a Collection Run looks: every Post published within it is collected if new and refreshed if already known (default 14 days).
