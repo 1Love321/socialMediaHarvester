@@ -78,23 +78,35 @@ The part of the harvester that knows how to collect from one Platform; adding a 
 _Avoid_: Connector, client, adapter
 
 **Harvest**:
-Everything a Harvester brings back for one Handle in one Collection Run: Raw Payloads labelled Public or Private, the Handle's account counts, Posts the Platform says are gone, and whether it finished or stopped early on quota.
+Everything a Harvester brings back for one Handle in one Collection Run: Raw Payloads labelled Public or Private, the Handle's account counts, Posts the Platform says are gone, and whether it finished or stopped early because the Platform's Rate Limit was reached.
 _Avoid_: Batch, result, fetch
 
 **Collection Run**:
-One pass over a Handle that collects every Post within its Tracking Window and records a Metric Snapshot for each. It ends Completed, Partial (stopped early because the Platform's quota ran out; what it collected is kept and the Handle gets a fresh run once quota returns) or Failed (an error persisted after retries; the Handle waits for its next scheduled run).
+One pass over a Handle that collects every Post within its Tracking Window and records a Metric Snapshot for each. It ends Completed, Partial (stopped early because the Platform's Rate Limit was reached; what it collected is kept and the Handle gets a fresh run once the limit allows) or Failed (an error persisted after retries; the Handle waits for its next scheduled run).
 _Avoid_: Sync, crawl, scrape, job
 
 **Collection Schedule**:
-A Handle's own set of clock times at which its regular Collection Runs start (e.g. every day at 09:00, or every day at 01:00 and 17:00). Each Handle has its own, so Handles start at different times. Manually triggered runs are not part of it and don't change it.
+A Handle's own set of clock times at which its regular Collection Runs start (e.g. every day at 09:00, or every day at 01:00 and 17:00). Each Handle has its own, so Handles start at different times. Manual Runs are not part of it and don't change it.
 _Avoid_: Cron, job, interval, frequency
+
+**Manual Run**:
+A Collection Run that staff start by hand rather than one from a Collection Schedule. It can cover one Handle, one Brand on one Platform, one Brand on all its Platforms, or a whole Platform; each Handle covered gets its own Collection Run, which goes ahead of scheduled runs. It may carry a Tracking Window Override and never changes anyone's Collection Schedule.
+_Avoid_: Ad-hoc run, forced sync, refresh now
+
+**Rate Limit**:
+The cap a Platform puts on how much we may collect from it in a given period (e.g. YouTube's daily units, Instagram's app-wide hourly usage). Each Platform has its own. When it is reached, Collection Runs wait; part of it is held back for Manual Runs. Some Platforms call this a "quota" (YouTube does); it is the same thing.
+_Avoid_: Quota (except when quoting a Platform's own docs or API), budget, allowance
+
+**Stopped Handle**:
+A Handle whose Collection Schedule has been halted because its Platform reported a lasting problem with it (e.g. unknown username, account gone). It gets no scheduled Collection Runs until staff act on it; its history is kept.
+_Avoid_: Disabled handle, dead handle, paused handle
 
 **Tracking Window**:
 How many days back from now a Collection Run looks: every Post published within it is collected if new and refreshed if already known (default 14 days).
 _Avoid_: History Window, backfill period, refresh period, lookback
 
 **Tracking Window Override**:
-A different Tracking Window given to a single manually triggered Collection Run (e.g. 100 days to catch up after a long outage); the Handle's Tracking Window itself is unchanged.
+A different Tracking Window given to a Manual Run (e.g. 100 days to catch up after a long outage); the Handle's Tracking Window itself is unchanged.
 _Avoid_: Backfill, temporary window
 
 **Tracked Post**:
