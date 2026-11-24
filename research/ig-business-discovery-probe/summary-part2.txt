@@ -1,0 +1,38 @@
+run at 2026-11-24T01:54:47.551605+00:00 stop at 75%
+
+=== is the limit cleared? (1 light call)
+0: HTTP 200 194 ms {'x-app-usage': '{"call_count":0,"total_cputime":0,"total_time":0}'}
+
+=== lookup: brands, age-gated (alcohol/gambling), personal-ish, nonexistent
+@jackdaniels_us: OK followers=734004 media_count=2385 keys=['followers_count', 'follows_count', 'id', 'media_count', 'name', 'username'] media_returned=3
+@budweiser: OK followers=733002 media_count=1623 keys=['followers_count', 'follows_count', 'id', 'media_count', 'username'] media_returned=3
+@heineken: OK followers=889531 media_count=1157 keys=['followers_count', 'follows_count', 'id', 'media_count', 'name', 'username'] media_returned=3
+@absolutvodka: OK followers=412286 media_count=2553 keys=['followers_count', 'follows_count', 'id', 'media_count', 'name', 'username'] media_returned=3
+@draftkings: OK followers=419394 media_count=21548 keys=['followers_count', 'follows_count', 'id', 'media_count', 'name', 'username'] media_returned=3
+@fanduel: OK followers=267494 media_count=21107 keys=['followers_count', 'follows_count', 'id', 'media_count', 'name', 'username'] media_returned=3
+@zuck: OK followers=17300057 media_count=447 keys=['followers_count', 'follows_count', 'id', 'media_count', 'name', 'username'] media_returned=3
+@instagram: OK followers=685304904 media_count=8657 keys=['followers_count', 'follows_count', 'id', 'media_count', 'name', 'username'] media_returned=3
+@smh_no_such_user_zz91x: HTTP 400 error code=110 subcode=2207013 type=OAuthException: Invalid user id
+
+=== usage cost of 10 light calls
+0: HTTP 200 144 ms {'x-app-usage': '{"call_count":3,"total_cputime":0,"total_time":3}'}
+1: HTTP 200 178 ms {'x-app-usage': '{"call_count":3,"total_cputime":0,"total_time":4}'}
+2: HTTP 200 206 ms {'x-app-usage': '{"call_count":3,"total_cputime":0,"total_time":4}'}
+3: HTTP 200 148 ms {'x-app-usage': '{"call_count":3,"total_cputime":0,"total_time":4}'}
+4: HTTP 200 146 ms {'x-app-usage': '{"call_count":3,"total_cputime":0,"total_time":4}'}
+5: HTTP 200 173 ms {'x-app-usage': '{"call_count":3,"total_cputime":0,"total_time":4}'}
+6: HTTP 200 152 ms {'x-app-usage': '{"call_count":3,"total_cputime":0,"total_time":4}'}
+7: HTTP 200 159 ms {'x-app-usage': '{"call_count":6,"total_cputime":0,"total_time":4}'}
+8: HTTP 200 158 ms {'x-app-usage': '{"call_count":6,"total_cputime":0,"total_time":5}'}
+9: HTTP 200 161 ms {'x-app-usage': '{"call_count":6,"total_cputime":0,"total_time":5}'}
+
+=== hidden counts @kimkardashian
+@kimkardashian: 100 posts; missing-field counts by type: {"CAROUSEL_ALBUM/FEED": {"n": 80, "no_like": 0, "no_comments": 0, "no_view": 80}, "IMAGE/FEED": {"n": 2, "no_like": 0, "no_comments": 0, "no_view": 2}, "VIDEO/REELS": {"n": 18, "no_like": 0, "no_comments": 0, "no_view": 0}}
+
+=== hidden counts @cristiano
+@cristiano: 100 posts; missing-field counts by type: {"CAROUSEL_ALBUM/FEED": {"n": 60, "no_like": 0, "no_comments": 0, "no_view": 60}, "IMAGE/FEED": {"n": 28, "no_like": 0, "no_comments": 0, "no_view": 28}, "VIDEO/REELS": {"n": 12, "no_like": 0, "no_comments": 0, "no_view": 0}}
+
+=== hidden counts @selenagomez
+@selenagomez: 100 posts; missing-field counts by type: {"CAROUSEL_ALBUM/FEED": {"n": 81, "no_like": 0, "no_comments": 0, "no_view": 81}, "VIDEO/REELS": {"n": 15, "no_like": 0, "no_comments": 0, "no_view": 15}, "IMAGE/FEED": {"n": 4, "no_like": 0, "no_comments": 0, "no_view": 4}}
+
+completed without hitting the stop

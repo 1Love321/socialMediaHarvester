@@ -1,0 +1,112 @@
+run at 2026-11-23T23:11:33.840426+00:00 api=https://graph.facebook.com/v27.0 ig_user=17841461574270580 app_secret_set=True
+
+=== token debug
+200 {
+ "type": "SYSTEM_USER",
+ "app_id": "1574417158052373",
+ "application": "Social Media Harvester",
+ "is_valid": true,
+ "expires_at": 0,
+ "data_access_expires_at": 0,
+ "scopes": [
+  "read_insights",
+  "pages_show_list",
+  "business_management",
+  "instagram_basic",
+  "instagram_manage_insights",
+  "pages_read_engagement",
+  "public_profile"
+ ],
+ "granular_scopes": [
+  {
+   "scope": "pages_show_list"
+  },
+  {
+   "scope": "business_management"
+  },
+  {
+   "scope": "instagram_basic"
+  },
+  {
+   "scope": "instagram_manage_insights"
+  },
+  {
+   "scope": "pages_read_engagement"
+  }
+ ]
+}
+
+=== page size @nba
+limit 25: HTTP 200, returned 25, 1433 ms usage={'x-app-usage': '{"call_count":0,"total_cputime":0,"total_time":0}'}
+limit 50: HTTP 200, returned 50, 3337 ms usage={'x-app-usage': '{"call_count":0,"total_cputime":0,"total_time":0}'}
+limit 100: HTTP 200, returned 100, 2417 ms usage={'x-app-usage': '{"call_count":0,"total_cputime":0,"total_time":1}'}
+limit 200: HTTP 200, returned 200, 3660 ms usage={'x-app-usage': '{"call_count":1,"total_cputime":0,"total_time":3}'}
+limit 500: HTTP 200, returned 500, 7123 ms usage={'x-app-usage': '{"call_count":1,"total_cputime":0,"total_time":5}'}
+limit 1000: HTTP 200, returned 1000, 15296 ms usage={'x-app-usage': '{"call_count":2,"total_cputime":0,"total_time":8}'}
+
+=== order @nba (limit 50, 6 pages)
+page 0: 50 items, 2377 ms, inversions=0, first=2026-11-23T22:02:20+0000 last=2026-11-22T06:08:07+0000 usage={'x-app-usage': '{"call_count":2,"total_cputime":0,"total_time":14}'}
+page 1: 50 items, 5114 ms, inversions=0, first=2026-11-22T06:00:07+0000 last=2026-11-21T05:19:58+0000 usage={'x-app-usage': '{"call_count":2,"total_cputime":0,"total_time":27}'}
+page 2: 50 items, 3337 ms, inversions=0, first=2026-11-21T05:08:11+0000 last=2026-11-20T04:02:30+0000 usage={'x-app-usage': '{"call_count":3,"total_cputime":0,"total_time":29}'}
+page 3: 50 items, 3402 ms, inversions=0, first=2026-11-20T03:59:23+0000 last=2026-11-19T01:48:20+0000 usage={'x-app-usage': '{"call_count":3,"total_cputime":0,"total_time":33}'}
+page 4: 50 items, 6506 ms, inversions=0, first=2026-11-19T01:30:37+0000 last=2026-11-18T04:48:04+0000 usage={'x-app-usage': '{"call_count":4,"total_cputime":0,"total_time":36}'}
+page 5: 50 items, 4941 ms, inversions=0, first=2026-11-18T04:42:19+0000 last=2026-11-17T03:15:23+0000 usage={'x-app-usage': '{"call_count":4,"total_cputime":0,"total_time":39}'}
+total 300 items, overall inversions=0, paging keys last page=['cursors']
+
+=== order @natgeo (limit 50, 6 pages)
+page 0: 50 items, 1736 ms, inversions=0, first=2026-11-23T23:09:48+0000 last=2026-11-05T02:00:01+0000 usage={'x-app-usage': '{"call_count":5,"total_cputime":0,"total_time":44}'}
+page 1: 50 items, 3093 ms, inversions=0, first=2026-11-04T14:00:01+0000 last=2026-10-17T10:07:42+0000 usage={'x-app-usage': '{"call_count":5,"total_cputime":0,"total_time":48}'}
+page 2: 50 items, 3202 ms, inversions=0, first=2026-10-16T19:35:02+0000 last=2026-09-30T19:04:42+0000 usage={'x-app-usage': '{"call_count":5,"total_cputime":0,"total_time":50}'}
+page 3: 50 items, 3434 ms, inversions=0, first=2026-09-29T22:00:01+0000 last=2026-09-09T19:00:01+0000 usage={'x-app-usage': '{"call_count":6,"total_cputime":0,"total_time":52}'}
+page 4: 50 items, 3498 ms, inversions=0, first=2026-09-09T13:00:03+0000 last=2026-08-23T13:00:01+0000 usage={'x-app-usage': '{"call_count":6,"total_cputime":0,"total_time":55}'}
+page 5: 50 items, 4057 ms, inversions=0, first=2026-08-22T16:00:12+0000 last=2026-08-05T22:29:25+0000 usage={'x-app-usage': '{"call_count":7,"total_cputime":0,"total_time":58}'}
+total 300 items, overall inversions=0, paging keys last page=['cursors']
+
+=== order @nike (limit 50, 6 pages)
+page 0: 50 items, 2634 ms, inversions=0, first=2026-11-22T03:26:38+0000 last=2026-06-17T14:00:52+0000 usage={'x-app-usage': '{"call_count":7,"total_cputime":0,"total_time":61}'}
+page 1: 50 items, 3549 ms, inversions=0, first=2026-06-16T14:00:06+0000 last=2026-02-09T19:06:49+0000 usage={'x-app-usage': '{"call_count":7,"total_cputime":0,"total_time":64}'}
+page 2: 50 items, 16822 ms, inversions=0, first=2026-02-09T11:00:03+0000 last=2025-07-05T23:02:43+0000 usage={'x-app-usage': '{"call_count":8,"total_cputime":0,"total_time":66}'}
+page 3: 50 items, 4262 ms, inversions=0, first=2025-07-05T22:25:57+0000 last=2024-12-09T14:07:10+0000 usage={'x-app-usage': '{"call_count":8,"total_cputime":0,"total_time":69}'}
+page 4: 50 items, 4852 ms, inversions=0, first=2024-11-28T17:00:06+0000 last=2024-08-05T21:11:49+0000 usage={'x-app-usage': '{"call_count":9,"total_cputime":0,"total_time":83}'}
+page 5: 50 items, 5371 ms, inversions=0, first=2024-08-05T18:14:23+0000 last=2024-04-13T12:17:48+0000 usage={'x-app-usage': '{"call_count":9,"total_cputime":0,"total_time":87}'}
+total 300 items, overall inversions=0, paging keys last page=['cursors']
+
+=== order @espn (limit 50, 6 pages)
+page 0: 50 items, 2214 ms, inversions=0, first=2026-11-23T22:39:28+0000 last=2026-11-19T20:30:15+0000 usage={'x-app-usage': '{"call_count":10,"total_cputime":0,"total_time":91}'}
+page 1: 50 items, 3502 ms, inversions=0, first=2026-11-19T19:49:29+0000 last=2026-11-16T16:16:20+0000 usage={'x-app-usage': '{"call_count":10,"total_cputime":0,"total_time":95}'}
+page 2: 50 items, 3568 ms, inversions=0, first=2026-11-16T14:39:59+0000 last=2026-11-11T17:06:37+0000 usage={'x-app-usage': '{"call_count":10,"total_cputime":0,"total_time":97}'}
+page 3: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+total 150 items, overall inversions=0, paging keys last page=-
+
+=== lookup: big brands, age-gated (alcohol/gambling), personal-ish, nonexistent
+@nba: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@jackdaniels_us: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@budweiser: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@heineken: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@absolutvodka: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@draftkings: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@fanduel: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@zuck: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@instagram: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@smh_no_such_user_zz91x: HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+
+=== hidden counts @nba
+HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@nba: 0 posts; missing-field counts by type: {}
+
+=== hidden counts @natgeo
+HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@natgeo: 0 posts; missing-field counts by type: {}
+
+=== hidden counts @kimkardashian
+HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@kimkardashian: 0 posts; missing-field counts by type: {}
+
+=== hidden counts @cristiano
+HTTP 403 error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+@cristiano: 0 posts; missing-field counts by type: {}
+
+=== usage headers over 30 light calls
+0: HTTP 403 130 ms {'x-app-usage': '{"call_count":16,"total_cputime":0,"total_time":103}'} error code=4 subcode=None type=OAuthException: (#4) Application request limit reached
+
+raw responses in /tmp/ig-bd-probe
