@@ -3,6 +3,8 @@
   PROTOTYPE — THROWAWAY. Lives only on branch prototype/app-screens. Never merge.
   Question (wayfinder ticket "What screens does the app have?", issue #25):
     What screens does the internal app have, and what does each show to each role?
+  DECIDED: layout A, with Posts opening in C's side drawer; Raw Payload Admin-only; unpermitted actions hidden;
+    Brand charts get a metric picker. B and C kept only as the record of what was compared.
   Plan: three structurally different app layouts (A/B/C) over the same mock data,
     switchable from the floating bottom bar (or ← / → keys), plus a role switcher
     (Viewer / Operator / Admin) and a toggle for how unpermitted actions appear.
@@ -153,7 +155,7 @@ const fmt = n => n == null ? '<span class="muted" title="not given by the Platfo
 // ---------------------------------------------------------------- state & routing
 const VARIANTS = { A: 'Sidebar sections', B: 'Brand drill-down', C: 'Ops console + explorers' };
 const HOME = { A: '/brands', B: '/', C: '/overview' };
-const S = { v: 'A', role: 'Admin', dis: 'hide', path: '/', modal: null, toast: null, f: { brand: '', p: '', type: '', st: '' } };
+const S = { v: 'A', role: 'Admin', dis: 'hide', path: '/', modal: null, toast: null, f: { brand: '', p: '', type: '', st: '', bm: 'likes' } };
 function readHash() {
   const [path, qs] = location.hash.slice(1).split('?');
   const q = new URLSearchParams(qs || '');
@@ -178,7 +180,8 @@ function toast(m) { S.toast = m; render(); setTimeout(() => { S.toast = null; re
 function openRun(scope) { S.modal = { type: 'run', scope }; render(); }
 function openForm(kind) { S.modal = { type: 'form', kind }; render(); }
 function closeModal() { S.modal = null; render(); }
-function denied(need) { return `<div class="box"><h1>Not available</h1>This screen needs the <b>${need}</b> role. You are a ${S.role}.<div class="q">Hide such pages entirely from nav (current) and show this page only on a direct link?</div></div>`; }
+const drawer = (html, back) => `<div class="C-drawer"><div style="text-align:right"><a href="${L(back)}">✕ close</a></div>${html}</div>`;
+function denied(need) { return `<div class="box"><h1>Not available</h1>This screen needs the <b>${need}</b> role. You are a ${S.role}.</div>`; }
 
 // ---------------------------------------------------------------- chips
 const platChip = p => `<span class="chip">${PLAT[p].name}</span>`;
@@ -230,10 +233,10 @@ function handleCharts(h, w = 440) {
 function brandCharts(b, w = 440) {
   const hs = HANDLES.filter(h => h.brand === b.id && h.state !== 'stopped');
   const byP = {}; hs.forEach(h => (byP[h.p] = byP[h.p] || []).push(h));
-  return `<div class="note">Stacked per Handle. No totals across Platforms (a YouTube view isn't an Instagram view), so one chart per Platform. No growth figures.</div>
+  const pick = `<select onchange="S.f.bm=this.value;render()">${['views', 'likes', 'comments'].map(m => `<option ${S.f.bm === m ? 'selected' : ''}>${m}</option>`).join('')}</select>`;
+  return `<div>Metric: ${pick}</div><div class="note">Stacked per Handle. No totals across Platforms (a YouTube view isn't an Instagram view), so one chart per Platform. No growth figures.</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px">${Object.entries(byP).map(([p, list]) =>
-      chart(list.map(h => ({ name: h.name, vals: series(h, 'likes', 44) })), { w, stacked: true, title: PLAT[p].name + ' · likes' })).join('')}</div>
-    <div class="q">Metric picker (views / likes / comments) per Brand chart, or show every metric like the Handle page?</div>`;
+      chart(list.map(h => ({ name: h.name, vals: series(h, S.f.bm, 44) })), { w, stacked: true, title: PLAT[p].name + ' · ' + S.f.bm })).join('')}</div>`;
 }
 
 // ---------------------------------------------------------------- shared building blocks
@@ -274,8 +277,7 @@ function postDetail(p, w = 440) {
   <h3>Metrics over time</h3>${chart([{ name: 'likes', vals: series(h, 'likes', 20) }], { w, title: 'likes' })}
   <h3>Metric Snapshots</h3><table><tr><th>Observed</th><th>Source</th><th>Views</th><th>Likes</th><th>Comments</th></tr>
   ${snaps.map(s => `<tr><td>${s.t}</td><td>${s.src}</td><td>${fmt(s.v)}</td><td>${fmt(s.l)}</td><td>${fmt(s.c)}</td></tr>`).join('')}</table>
-  <h3>Latest Raw Payload</h3><details><summary>fetched Today 17:04 · API v3</summary><pre style="background:#f8f8f8;padding:6px;font-size:11px">{ "id": "${p.id}", "snippet": { "title": "${p.title}" }, "statistics": { ... } }</pre></details>
-  <div class="q">Should Viewers see the Raw Payload, or only Admins?</div>`;
+  ${can('admin') ? `<h3>Latest Raw Payload <span class="chip">Admin only</span></h3><details><summary>fetched Today 17:04 · API v3</summary><pre style="background:#f8f8f8;padding:6px;font-size:11px">{ "id": "${p.id}", "snippet": { "title": "${p.title}" }, "statistics": { ... } }</pre></details>` : ''}`;
 }
 function scheduleBox(h) {
   return `<div class="box"><b>Collection Schedule</b> ${btn('edit', 'Edit schedule', `openForm('schedule')`)}<br>
@@ -378,9 +380,8 @@ function variantA() {
     main = `<div class="muted"><a href="${L('/brands')}">Brands</a> › <a href="${L('/brand/' + h.brand)}">${bOf(h.brand).name}</a> ›</div>
       <h1>${platChip(h.p)} ${h.name} ${authChip(h)} ${stateChip(h)} ${h.state === 'stopped' ? btn('restart', 'Restart', `openForm('restart')`) : btn('run', 'Run now…', `openRun('Handle ${h.name}')`)}</h1>
       ${tabs('/handle/' + h.id, [['posts', 'Posts'], ['charts', 'Charts'], ['schedule', 'Schedule'], ['runs', 'Runs'], ['auth', 'Authorization']], tab)}
-      ${tab === 'posts' ? postFilters({ h: 1 }) + postsTable(filteredPosts({ h: h.id }), { handleCol: false }) : tab === 'charts' ? handleCharts(h) : tab === 'schedule' ? scheduleBox(h) : tab === 'runs' ? runsTable(RUNS.filter(r => r.h === h.id), false) : authBox(h)}`; }
-  else if (sec === 'posts') main = `<h1>Posts</h1>${postFilters()}${postsTable(filteredPosts())}`;
-  else if (sec === 'post') main = `<div class="muted"><a href="${L('/posts')}">Posts</a> ›</div>` + postDetail(pOf(p[1]));
+      ${tab === 'posts' ? `<div class="row"><div class="grow">${postFilters({ h: 1 }) + postsTable(filteredPosts({ h: h.id }), { handleCol: false, link: id => L('/handle/' + h.id + '/posts/' + id) })}</div>${p[3] ? drawer(postDetail(pOf(p[3]), 480), '/handle/' + h.id + '/posts') : ''}</div>` : tab === 'charts' ? handleCharts(h) : tab === 'schedule' ? scheduleBox(h) : tab === 'runs' ? runsTable(RUNS.filter(r => r.h === h.id), false) : authBox(h)}`; }
+  else if (sec === 'posts') main = `<h1>Posts</h1><div class="row"><div class="grow">${postFilters()}${postsTable(filteredPosts(), { link: id => L('/posts/' + id) })}</div>${p[1] ? drawer(postDetail(pOf(p[1]), 480), '/posts') : ''}</div>`;
   else if (sec === 'alerts') main = can('alerts') ? `<h1>Alerts</h1>${alertsTable()}` : denied('Operator');
   else if (sec === 'runs') main = can('run') ? `<h1>Collection Runs ${btn('run', 'Manual Run…', `openRun('choose: Handle / Brand on a Platform / Brand on all Platforms / whole Platform')`)}</h1><h3>Queue</h3>${queueTable()}<h3>Recent</h3>${runsTable(RUNS)}` : denied('Operator');
   else if (sec === 'limits') main = can('limits') ? `<h1>Rate Limits</h1><div class="box">${limitsBox()}</div>` : denied('Operator');
@@ -436,7 +437,6 @@ function variantC() {
   const tab = (path, label, act) => (!act || can(act)) ? `<a class="${sec === path ? 'on' : ''}" href="${L('/' + path)}">${label}</a>` : '';
   const top = `<div class="C-top"><b style="padding:10px 14px 10px 0">Harvester</b>${tab('overview', 'Overview')}${tab('posts', 'Posts')}${tab('handles', 'Handles & Brands')}${tab('runs', 'Runs', 'run')}${tab('admin', 'Admin', 'admin')}
     <span class="grow"></span><a href="${L('/login')}">${S.role.toLowerCase()}@team · log out</a></div>`;
-  const drawer = (html, back) => `<div class="C-drawer"><div style="text-align:right"><a href="${L(back)}">✕ close</a></div>${html}</div>`;
   let main;
   if (sec === 'overview') {
     if (can('alerts')) main = `<div class="row"><div class="grow"><h2 style="margin-top:0">Needs attention</h2>${alertsTable(true)}
