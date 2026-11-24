@@ -19,7 +19,7 @@ A single account on a Platform, identified by its platform-specific name or id (
 _Avoid_: Channel, profile, page, Watched Handle, Public Handle
 
 **Authorization**:
-An owner's grant allowing the harvester to read Private Data for one Handle. It is Active while it works; it ends as Expired (stopped working without the owner withdrawing; can be reconnected, and becomes Revoked if not reconnected in time), Revoked (consent withdrawn, or the Handle disconnected by staff) or Replaced (a newer Authorization for the same Handle took over). Each grant is a new Authorization; a Handle has at most one Active one.
+An owner's grant allowing the harvester to read Private Data for one Handle. It is Active while it works; it ends as Expired (stopped working without the owner withdrawing; can be reconnected, and becomes Revoked if not reconnected within its Platform's set number of days), Revoked (consent withdrawn, or the Handle disconnected by staff) or Replaced (a newer Authorization for the same Handle took over). Each grant is a new Authorization; a Handle has at most one Active one.
 _Avoid_: Connection, link, token (the token is an implementation detail of an Authorization)
 
 **Authorized Handle**:
@@ -56,7 +56,7 @@ The normalized category of a Post, the same set across all Platforms (video, sho
 _Avoid_: Kind, media type, format
 
 **Unavailable Post**:
-A previously collected Post that the Platform no longer returns (deleted, made private, or removed). It keeps its history but receives no new Metric Snapshots.
+A previously collected Post that the Platform no longer returns (deleted, made private, or removed). It receives no new Metric Snapshots; it keeps its history unless its Platform's rules require deleting it (YouTube does).
 _Avoid_: Deleted post, missing post
 
 **Raw Payload**:
@@ -70,6 +70,10 @@ _Avoid_: Stats, current metrics
 **Handle Snapshot**:
 The account-wide counts of a Handle (followers, subscribers, number of posts) as observed during one Collection Run. Like Metric Snapshots, they accumulate.
 _Avoid_: Profile stats, account stats
+
+**Deletion Log**:
+The record of what the harvester deleted and why (a retention rule, a Revoked Authorization, a deletion request, a whole-Platform purge): the scope, when it was requested and completed, and how much was removed, never the deleted content itself.
+_Avoid_: Audit trail, purge history
 
 ### Collection
 
@@ -101,6 +105,10 @@ _Avoid_: Quota (except when quoting a Platform's own docs or API), budget, allow
 A Handle whose Collection Schedule has been halted because its Platform reported a lasting problem with it (e.g. unknown username, account gone). It gets no scheduled Collection Runs until staff act on it; its history is kept.
 _Avoid_: Disabled handle, dead handle, paused handle
 
+**Retention Refresh**:
+A periodic re-fetch of Frozen Posts that a Platform's rules require us to refresh rather than leave untouched (e.g. YouTube Posts of Authorized Handles, monthly). It renews the Post, checks that it still exists and adds one Metric Snapshot. It is not a Collection Run and has lower priority than Collection Runs.
+_Avoid_: Re-sync, revalidation
+
 **Tracking Window**:
 How many days back from now a Collection Run looks: every Post published within it is collected if new and refreshed if already known (default 14 days).
 _Avoid_: History Window, backfill period, refresh period, lookback
@@ -113,5 +121,5 @@ _Avoid_: Backfill, temporary window
 A Post published within its Handle's Tracking Window; it receives a new Metric Snapshot on each Collection Run.
 
 **Frozen Post**:
-A Post older than its Handle's Tracking Window; it keeps its past Metric Snapshots but receives no new ones.
+A Post older than its Handle's Tracking Window; it keeps its past Metric Snapshots (for as long as its Platform's rules allow) and receives no new ones from Collection Runs, only from a Retention Refresh.
 _Avoid_: Archived post, stale post
