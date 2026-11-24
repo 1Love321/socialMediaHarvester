@@ -115,7 +115,15 @@ def main():
         out(f"app info: {gist(st, b)}")
     if SYSTEM:
         probe("system", SYSTEM, pages)
-    if APP_SECRET:
+        st, b = call(SYSTEM, OWN_PAGE_ID, {"fields": "id,name,access_token"}, "system-own-page-token")
+        ptok = b.get("access_token") if isinstance(b, dict) else None
+        if ptok:
+            SECRETS.append(ptok)
+            out(f"\nown Page token via System User: obtained for {b.get('name')} ({b.get('id')})")
+            probe("page-via-system", ptok, pages)
+        else:
+            out(f"\nno own Page token via System User: {gist(st, b)}")
+    if APP_SECRET and os.environ.get("SMH_SKIP_APP") != "1":
         probe("app", f"{APP_ID}|{APP_SECRET}", pages)
     if USER:
         probe("user", USER, pages)

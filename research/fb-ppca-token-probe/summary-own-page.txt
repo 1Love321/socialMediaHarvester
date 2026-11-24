@@ -1,0 +1,23 @@
+API=https://graph.facebook.com/v27.0 app=1574417158052373 pages=['119616907904733'] at 2026-11-24T15:32:39Z
+present: app_secret=True system_token=True user_token=False
+app info: HTTP 200 OK: {"id": "1574417158052373", "name": "Social Media Harvester", "category": "Utilities", "link": "https://justriseandgrind.com/"}
+
+=== token: system ===
+  debug_token: type=SYSTEM_USER valid=True app=Social Media Harvester expires=0 scopes=['read_insights', 'pages_show_list', 'business_management', 'instagram_basic', 'instagram_manage_insights', 'pages_read_engagement', 'public_profile']
+  [119616907904733] page fields: HTTP 200 OK: {"id": "119616907904733", "name": "Instagram reeltedt", "fan_count": 0, "followers_count": 0, "link": "https://www.facebook.com/119616907904733", "verification_status": "not_verified"}
+  [119616907904733] /posts: HTTP 400 code 190/2069032: Invalid OAuth 2.0 Access Token
+  [119616907904733] /feed: HTTP 400 code 190/2069032: Invalid OAuth 2.0 Access Token
+  [119616907904733] /published_posts: HTTP 403 code 210/None: (#210) A page access token is required to request this resource.
+  [119616907904733] nested posts field: HTTP 400 code 190/2069032: Invalid OAuth 2.0 Access Token
+  [119616907904733] /posts (id,created_time only): HTTP 400 code 190/2069032: Invalid OAuth 2.0 Access Token
+
+own Page token via System User: obtained for Instagram reeltedt (119616907904733)
+
+=== token: page-via-system ===
+  debug_token: type=PAGE valid=True app=Social Media Harvester expires=0 scopes=['read_insights', 'pages_show_list', 'business_management', 'instagram_basic', 'instagram_manage_insights', 'pages_read_engagement', 'public_profile']
+  [119616907904733] page fields: HTTP 200 OK: {"id": "119616907904733", "name": "Instagram reeltedt", "fan_count": 0, "followers_count": 0, "link": "https://www.facebook.com/119616907904733", "verification_status": "not_verified"}
+  [119616907904733] /posts: HTTP 200 OK: 2 items; first=119616907904733_122261286710044294 2026-11-24T15:30:54+0000 reactions=0 comments=0 shares=None keys=['comments', 'created_time', 'id', 'message', 'permalink_url', 'reactions', 'status_type']
+  [119616907904733] /feed: HTTP 200 OK: 2 items; first=119616907904733_122261286710044294 2026-11-24T15:30:54+0000 reactions=0 comments=0 shares=None keys=['comments', 'created_time', 'id', 'message', 'permalink_url', 'reactions', 'status_type']
+  [119616907904733] /published_posts: HTTP 200 OK: 2 items; first=119616907904733_122261286710044294 2026-11-24T15:30:54+0000 reactions=0 comments=0 shares=None keys=['comments', 'created_time', 'id', 'message', 'permalink_url', 'reactions', 'status_type']
+  [119616907904733] nested posts field: HTTP 200 OK: {"posts": {"data": [{"id": "119616907904733_122261286710044294", "created_time": "2026-11-24T15:30:54+0000", "message": "words and long", "permalink_url": "https://www.facebook.com/reel/3624483564390191/", "status_type": "added_video", "reactions": {"data": [], "summary": {"total_count": 0}}, "comme
+  [119616907904733] /posts (id,created_time only): HTTP 200 OK: 2 items; first=119616907904733_122261286710044294 2026-11-24T15:30:54+0000 reactions=None comments=None shares=None keys=['created_time', 'id']
