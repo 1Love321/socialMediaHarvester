@@ -19,10 +19,18 @@ class AccessTest {
 
 	@Test
 	void healthIsReachableWithoutSigningIn() {
-		// Reachability only: whether the shared PostgreSQL server answers in time is not this test's concern.
 		client.get().uri("/actuator/health").exchange()
-				.expectStatus().value(status -> assertThat(status).isIn(200, 503))
-				.expectBody().jsonPath("$.status").isNotEmpty();
+				.expectStatus().isOk()
+				.expectBody().jsonPath("$.status").isEqualTo("UP");
+	}
+
+	@Test
+	void anonymousHealthCheckStartsNoSession() {
+		var response = client.get().uri("/actuator/health").exchange()
+				.expectStatus().isOk()
+				.returnResult(Void.class);
+
+		assertThat(response.getResponseCookies()).doesNotContainKey("SESSION");
 	}
 
 	@Test
