@@ -21,8 +21,6 @@ Write a concrete class. Add an interface only when there are several real implem
 
 ## Reactive code
 
-ADR 0010 ([docs/adr/0010-reactive-stack-end-to-end.md](docs/adr/0010-reactive-stack-end-to-end.md)) is the rulebook. In review, look for:
-
 - Blocking work (password hashing, file IO, a blocking library) wrapped in `Mono.fromCallable(...).subscribeOn(Schedulers.boundedElastic())`.
 - Methods returning `Mono`/`Flux` and composing them; a `subscribe()` inside application code drops errors and is a bug.
 - Never block on a reactive thread (event loop or `parallel` scheduler). `.block()` is allowed only on a thread you control (startup, tests, a dedicated job), with a comment saying why the code can't stay reactive. Inside request handling, compose with `flatMap`/`zip` instead. Blocking libraries run on `Schedulers.boundedElastic()`.
@@ -43,9 +41,7 @@ Use the terms in [GLOSSARY.md](GLOSSARY.md) and none of their _Avoid_ words. A c
 
 ## Tests
 
-- Test packages mirror main packages. The shared harness lives in the test-only `support` package: `@AppTest` boots the app against `harvester_test` with a `TestClock` and a `PlatformApiStub`.
-- HTTP behaviour through `WebTestClient`, signing in with `support.SignIn`.
 - Reactive results through `StepVerifier`. `.block()` is acceptable in test setup and teardown only.
 - BlockHound runs in every test; a `BlockingOperationError` is a real bug in main code, not a test to silence.
 - BlockHound allow-list entries live in `support.BlockHoundAllowList`, and each one needs a comment saying why the call is safe.
-- Tests touch only `harvester_test`. Assertions on credentials compare booleans so a failure never prints a value.
+- Assertions on credentials compare booleans so a failure never prints a value.
