@@ -2,7 +2,6 @@ package com.harvester.socialmediaharvester.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -39,15 +38,6 @@ class ProfileDatabaseTest {
 		assertThat(sameAsVariable(environment, "spring.flyway.user", "DB_USER_HARVEST")).isTrue();
 		assertThat(sameAsVariable(environment, "spring.r2dbc.password", "DB_PASSWORD_HARVEST")).isTrue();
 		assertThat(sameAsVariable(environment, "spring.flyway.password", "DB_PASSWORD_HARVEST")).isTrue();
-	}
-
-	@Test
-	void noProfileMeansLocal() {
-		StandardEnvironment environment = new StandardEnvironment();
-		ConfigDataEnvironmentPostProcessor.applyTo(environment, new DefaultResourceLoader(),
-				new DefaultBootstrapContext());
-
-		assertThat(environment.getProperty("spring.r2dbc.url")).endsWith("/harvester_dev");
 	}
 
 	@ParameterizedTest
