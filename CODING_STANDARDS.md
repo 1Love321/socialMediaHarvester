@@ -47,4 +47,5 @@ Use the terms in [GLOSSARY.md](GLOSSARY.md) and none of their _Avoid_ words. A c
 - HTTP behaviour through `WebTestClient`, signing in with `support.SignIn`.
 - Reactive results through `StepVerifier`. `.block()` is acceptable in test setup and teardown only.
 - BlockHound runs in every test; a `BlockingOperationError` is a real bug in main code, not a test to silence.
+- BlockHound allow-list entries live in `support.BlockHoundAllowList`, and each one needs a comment saying why the call is safe.
 - Tests touch only `harvester_test`. Assertions on credentials compare booleans so a failure never prints a value.

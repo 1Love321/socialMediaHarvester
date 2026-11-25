@@ -2,6 +2,7 @@ package com.harvester.socialmediaharvester.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -68,5 +69,14 @@ class HarnessTest {
 		}).subscribeOn(Schedulers.parallel());
 
 		StepVerifier.create(blocking).verifyError(BlockingOperationError.class);
+	}
+
+	@Test
+	void secureRandomRefillIsAllowedOnNonBlockingThreads() {
+		// 64 bytes exceeds NativePRNG's 32-byte buffer, so this always reads /dev/urandom
+		Mono<Void> random = Mono.<Void>fromRunnable(() -> new SecureRandom().nextBytes(new byte[64]))
+			.subscribeOn(Schedulers.parallel());
+
+		StepVerifier.create(random).verifyComplete();
 	}
 }
