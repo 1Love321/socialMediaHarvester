@@ -1,6 +1,6 @@
 # Reactive stack end to end: WebFlux, WebClient and R2DBC
 
-The backend is reactive from the HTTP edge to the database: Spring WebFlux serves the React app and its API, Harvesters call Platforms with `WebClient` and return `Mono<Harvest>`, PostgreSQL is reached through Spring Data R2DBC, and Spring Security runs its reactive variant (form login on `ServerHttpSecurity`). No `.block()` in application code.
+The backend is reactive from the HTTP edge to the database: Spring WebFlux serves the React app and its API, Harvesters call Platforms with `WebClient` and return `Mono<Harvest>`, PostgreSQL is reached through Spring Data R2DBC, and Spring Security runs its reactive variant (form login on `ServerHttpSecurity`). No blocking on reactive threads; `.block()` only on threads the app controls, such as startup.
 
 We chose this over a blocking Spring MVC app with `RestClient` and JPA, and over reactive Harvesters inside a blocking core. Performance did not decide it: collection is limited by each Platform's Rate Limit, not by threads, and blocking code on Java 25 virtual threads would have been simpler and fast enough. We chose it deliberately for the team's learning and experience with the reactive model, accepting the extra complexity.
 
@@ -11,6 +11,5 @@ Consequences:
 - Any library added later must be non-blocking, or be isolated on `Schedulers.boundedElastic()`. BlockHound in tests catches blocking calls on event-loop threads.
 - Tests use `StepVerifier` and `WebTestClient`.
 - Sessions live in the in-memory `WebSession`, which is enough for one instance; Kubernetes with several instances will need Spring Session.
-- One exception: the first-Admin check waits once at startup on the main thread (`.block()`), so startup fails clearly if the first Admin cannot be created.
 
 See [the decision](https://github.com/rahmed12/socialMediaHarvester/issues/26).

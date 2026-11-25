@@ -1,16 +1,16 @@
 # Coding standards
 
-Judgement calls for review. Mechanical rules are ArchUnit tests (listed at the end); `mvn test` fails when one breaks, so they are not repeated here.
+The rules every change follows, checked in review.
 
 ## Layers
 
-All code sits under `com.harvester.socialmediaharvester`, packaged by layer:
+All code sits under `com.harvester.socialmediaharvester`, packaged by layer. Every new file, package or folder follows this layout; a class's suffix or annotation decides its package:
 
-- `config`: wiring only. `*Config` classes (`@Configuration(proxyBeanMethods = false)`) build beans and take other beans as `@Bean` method arguments. `*Properties` records are `@Validated` and registered with `@EnableConfigurationProperties` on a config class. A setting needed only in some situations (the first-Admin settings, needed only on an empty database) carries no constraint; the service that needs it checks it and fails with a message naming the environment variables. Startup triggers (an `ApplicationRunner` bean) live here and call a service for the work. Startup guards (`EnvironmentPostProcessor`, Flyway customizers) live here too.
-- `controller`: HTTP only. Read the request, call a service, map the result to a `model/dto` record. Return DTOs, never entities. The one exception is a static server-rendered page such as the sign-in form, which `SignInController` returns as HTML with no service call.
-- `service`: the behaviour. Concrete `*Service` classes; they own repository calls and business rules.
-- `model`: entities and enums. `model/dto`: API records.
-- `repository`: Spring Data R2DBC interfaces.
+- `config`: wiring only. `*Config`, `*Properties` and `@Configuration` classes live here. `*Config` classes (`@Configuration(proxyBeanMethods = false)`) build beans and take other beans as `@Bean` method arguments. `*Properties` records are `@Validated` and registered with `@EnableConfigurationProperties` on a config class. A setting needed only in some situations (the first-Admin settings, needed only on an empty database) carries no constraint; the service that needs it checks it and fails with a message naming the environment variables. Startup triggers (an `ApplicationRunner` bean) live here and call a service for the work. Startup guards (`EnvironmentPostProcessor`, Flyway customizers) live here too.
+- `controller`: HTTP only; `*Controller`, `@RestController` and `@Controller` classes, which reach data through services and depend on no repository. Read the request, call a service, map the result to a `model/dto` record. Return DTOs, never entities. The one exception is a static server-rendered page such as the sign-in form, which `SignInController` returns as HTML with no service call.
+- `service`: the behaviour. Concrete `*Service` and `@Service` classes; they own repository calls and business rules.
+- `model`: `@Table` entities and enums. `model/dto`: API records.
+- `repository`: Spring Data R2DBC interfaces; every Spring Data repository and `*Repository` type.
 - Add `mapper` or `exception` only when a feature needs one; leave no empty packages.
 
 Constructor injection with final fields everywhere.
@@ -25,6 +25,8 @@ ADR 0010 ([docs/adr/0010-reactive-stack-end-to-end.md](docs/adr/0010-reactive-st
 
 - Blocking work (password hashing, file IO, a blocking library) wrapped in `Mono.fromCallable(...).subscribeOn(Schedulers.boundedElastic())`.
 - Methods returning `Mono`/`Flux` and composing them; a `subscribe()` inside application code drops errors and is a bug.
+- Never block on a reactive thread (event loop or `parallel` scheduler). `.block()` is allowed only on a thread you control (startup, tests, a dedicated job), with a comment saying why the code can't stay reactive. Inside request handling, compose with `flatMap`/`zip` instead. Blocking libraries run on `Schedulers.boundedElastic()`.
+- JDBC (`java.sql`, `javax.sql`, Spring JDBC) in main code only in the `config.Flyway*` classes and `config.DatabaseCredentialsCheck`; Flyway migrations are the only JDBC use.
 - Time read from the injected `Clock`, never `Instant.now()`.
 
 ## Naming
@@ -46,13 +48,3 @@ Use the terms in [GLOSSARY.md](GLOSSARY.md) and none of their _Avoid_ words. A c
 - Reactive results through `StepVerifier`. `.block()` is acceptable in test setup and teardown only.
 - BlockHound runs in every test; a `BlockingOperationError` is a real bug in main code, not a test to silence.
 - Tests touch only `harvester_test`. Assertions on credentials compare booleans so a failure never prints a value.
-
-## Enforced by ArchUnit
-
-`src/test/java/com/harvester/socialmediaharvester/architecture/ArchitectureTest.java`:
-
-- Classes live in their layer: `*Config`, `*Properties` and `@Configuration` in `config`; `@RestController`/`@Controller` and `*Controller` in `controller`; `@Service` and `*Service` in `service`; `@Table` entities in `model`; Spring Data repositories and `*Repository` in `repository`.
-- Controllers do not depend on repositories.
-- No interface is named `I[A-Z]*`.
-- No `Mono.block*` / `Flux.block*` in main code, except `service.FirstAdminService` (ADR 0010).
-- No JDBC (`java.sql`, `javax.sql`, Spring JDBC) in main code, except `config.Flyway*` classes and `config.DatabaseCredentialsCheck`.
