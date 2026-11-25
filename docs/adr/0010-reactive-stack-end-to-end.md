@@ -11,5 +11,6 @@ Consequences:
 - Any library added later must be non-blocking, or be isolated on `Schedulers.boundedElastic()`. BlockHound in tests catches blocking calls on event-loop threads.
 - Tests use `StepVerifier` and `WebTestClient`.
 - Sessions live in the in-memory `WebSession`, which is enough for one instance; Kubernetes with several instances will need Spring Session.
+- One exception: the first-Admin check waits once at startup on the main thread (`.block()`), so startup fails clearly if the first Admin cannot be created.
 
 See [the decision](https://github.com/rahmed12/socialMediaHarvester/issues/26).
