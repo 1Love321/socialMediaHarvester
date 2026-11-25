@@ -1,80 +1,68 @@
 package com.harvester.socialmediacollector.users;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Clock;
+import java.time.Duration;
 
-import org.flywaydb.core.api.callback.Callback;
-import org.flywaydb.core.api.callback.Context;
-import org.flywaydb.core.api.callback.Event;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
 /**
- * Creates the first Admin from {@code harvester.first-admin.*} right after Flyway
- * migrates a database that has no user accounts. It runs on Flyway's own JDBC
- * connection during startup migration, so the app stays non-blocking (ADR 0010).
+ * Creates the first Admin from {@code harvester.first-admin.*} when the database
+ * has no user accounts yet; with any account present it does nothing and needs
+ * no config. It runs over R2DBC once Flyway has migrated, before the app is
+ * reported ready, and fails startup with a clear message when it has to seed
+ * but the config is missing.
  */
 @Component
-class FirstAdminSeeder implements Callback {
+class FirstAdminSeeder implements ApplicationRunner {
+
+	private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(1);
 
 	private final FirstAdminProperties firstAdmin;
 	private final PasswordEncoder passwordEncoder;
 	private final Clock clock;
+	private final UserAccountRepository accounts;
 
-	FirstAdminSeeder(FirstAdminProperties firstAdmin, PasswordEncoder passwordEncoder, Clock clock) {
+	FirstAdminSeeder(FirstAdminProperties firstAdmin, PasswordEncoder passwordEncoder, Clock clock,
+			UserAccountRepository accounts) {
 		this.firstAdmin = firstAdmin;
 		this.passwordEncoder = passwordEncoder;
 		this.clock = clock;
+		this.accounts = accounts;
 	}
 
+	/**
+	 * Waits on the main startup thread, which is not a reactive thread, so
+	 * startup cannot finish before the first Admin exists.
+	 */
 	@Override
-	public boolean supports(Event event, Context context) {
-		return event == Event.AFTER_MIGRATE;
+	public void run(ApplicationArguments args) {
+		seedIfEmpty().block(STARTUP_TIMEOUT);
 	}
 
-	@Override
-	public boolean canHandleInTransaction(Event event, Context context) {
-		return true;
+	Mono<Void> seedIfEmpty() {
+		return accounts.count()
+				.filter(count -> count == 0)
+				.flatMap(none -> newAdmin())
+				.flatMap(accounts::save)
+				.then();
 	}
 
-	@Override
-	public void handle(Event event, Context context) {
-		try {
-			seedIfEmpty(context.getConnection());
-		}
-		catch (SQLException ex) {
-			throw new IllegalStateException("Could not create the first Admin account", ex);
-		}
-	}
-
-	@Override
-	public String getCallbackName() {
-		return "first-admin";
-	}
-
-	private void seedIfEmpty(Connection connection) throws SQLException {
-		try (PreparedStatement any = connection.prepareStatement("SELECT 1 FROM user_account LIMIT 1");
-				ResultSet rows = any.executeQuery()) {
-			if (rows.next()) {
-				return;
-			}
-		}
+	private Mono<UserAccount> newAdmin() {
 		if (!StringUtils.hasText(firstAdmin.email()) || !StringUtils.hasText(firstAdmin.password())) {
-			throw new IllegalStateException("The database has no user accounts. Set harvester.first-admin.email and "
-					+ "harvester.first-admin.password (e.g. via HARVESTER_FIRST_ADMIN_EMAIL and "
-					+ "HARVESTER_FIRST_ADMIN_PASSWORD) so the first Admin can be created.");
+			return Mono.error(new IllegalStateException("The database has no user accounts, so the first Admin "
+					+ "must be created, but harvester.first-admin.email or harvester.first-admin.password is missing. "
+					+ "Set HARVESTER_FIRST_ADMIN_EMAIL and HARVESTER_FIRST_ADMIN_PASSWORD."));
 		}
-		try (PreparedStatement insert = connection.prepareStatement(
-				"INSERT INTO user_account (email, password_hash, role, created_at) VALUES (?, ?, 'ADMIN', ?)")) {
-			insert.setString(1, firstAdmin.email().trim());
-			insert.setString(2, passwordEncoder.encode(firstAdmin.password()));
-			insert.setTimestamp(3, Timestamp.from(clock.instant()));
-			insert.executeUpdate();
-		}
+		// Hashing is slow on purpose, so it stays off the event loop.
+		return Mono.fromCallable(() -> new UserAccount(null, firstAdmin.email().trim(),
+				passwordEncoder.encode(firstAdmin.password()), Role.ADMIN, clock.instant()))
+				.subscribeOn(Schedulers.boundedElastic());
 	}
 }
