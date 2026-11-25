@@ -7,9 +7,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
 /** Logs in through the real form login and hands back a client carrying the session. */
-public final class Login {
+public final class SignIn {
 
-	private Login() {
+	private SignIn() {
 	}
 
 	public static WebTestClient.ResponseSpec submit(WebTestClient client, String email, String password) {
@@ -25,7 +25,7 @@ public final class Login {
 				.returnResult(Void.class)
 				.getResponseCookies().getFirst("SESSION");
 		if (session == null) {
-			throw new AssertionError("login as " + email + " did not start a session");
+			throw new AssertionError("sign-in as " + email + " did not start a session");
 		}
 		return client.mutate().defaultCookie(session.getName(), session.getValue()).build();
 	}

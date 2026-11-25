@@ -10,7 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration(proxyBeanMethods = false)
 @ConfigurationPropertiesScan
-class HarvesterConfiguration {
+class ClockAndPasswordConfiguration {
 
 	/** The one source of "now"; tests replace it to move time. */
 	@Bean

@@ -21,5 +21,5 @@ import org.springframework.test.context.ActiveProfiles;
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
 @Import(TestHarnessConfiguration.class)
-public @interface HarvesterTest {
+public @interface AppTest {
 }

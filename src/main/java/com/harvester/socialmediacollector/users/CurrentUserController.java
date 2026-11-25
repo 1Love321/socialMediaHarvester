@@ -9,20 +9,20 @@ import reactor.core.publisher.Mono;
 
 /** Who is logged in, so the React app can shape itself to the role. */
 @RestController
-class MeController {
+class CurrentUserController {
 
 	private final UserAccountRepository accounts;
 
-	MeController(UserAccountRepository accounts) {
+	CurrentUserController(UserAccountRepository accounts) {
 		this.accounts = accounts;
 	}
 
-	record Me(String email, Role role) {
+	record CurrentUser(String email, Role role) {
 	}
 
 	@GetMapping("/api/me")
-	Mono<Me> me(@AuthenticationPrincipal UserDetails principal) {
+	Mono<CurrentUser> currentUser(@AuthenticationPrincipal UserDetails principal) {
 		return accounts.findByEmailIgnoringCase(principal.getUsername())
-				.map(account -> new Me(account.email(), account.role()));
+				.map(account -> new CurrentUser(account.email(), account.role()));
 	}
 }

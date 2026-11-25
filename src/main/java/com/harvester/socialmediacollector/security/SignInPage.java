@@ -14,11 +14,11 @@ import reactor.core.publisher.Mono;
 
 /** The email and password form posted to {@code /login}. */
 @Configuration(proxyBeanMethods = false)
-public class LoginPage {
+public class SignInPage {
 
 	@Bean
-	RouterFunction<ServerResponse> loginPageRoute() {
-		return RouterFunctions.route().GET("/login", LoginPage::render).build();
+	RouterFunction<ServerResponse> signInPageRoute() {
+		return RouterFunctions.route().GET("/login", SignInPage::render).build();
 	}
 
 	private static Mono<ServerResponse> render(ServerRequest request) {

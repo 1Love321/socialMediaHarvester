@@ -10,11 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import com.harvester.socialmediacollector.harness.HarvesterTest;
-import com.harvester.socialmediacollector.harness.Login;
+import com.harvester.socialmediacollector.harness.AppTest;
+import com.harvester.socialmediacollector.harness.FirstAdmin;
+import com.harvester.socialmediacollector.harness.SignIn;
 
 /** The Maven build bundles the React app and Spring Boot serves it after login. */
-@HarvesterTest
+@AppTest
 class ReactAppTest {
 
 	@Autowired
@@ -22,7 +23,7 @@ class ReactAppTest {
 
 	@Test
 	void loggedInUserGetsTheReactAppWithItsAssetsReachable() {
-		String page = Login.as(client, AdminLoginTest.ADMIN_EMAIL, AdminLoginTest.ADMIN_PASSWORD)
+		String page = SignIn.as(client, FirstAdmin.EMAIL, FirstAdmin.PASSWORD)
 				.get().uri("/").accept(MediaType.TEXT_HTML).exchange()
 				.expectStatus().isOk()
 				.expectBody(String.class).returnResult().getResponseBody();

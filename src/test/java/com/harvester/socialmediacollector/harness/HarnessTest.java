@@ -18,7 +18,7 @@ import reactor.blockhound.BlockingOperationError;
 import reactor.test.StepVerifier;
 
 /** The harness every later test relies on works as advertised. */
-@HarvesterTest
+@AppTest
 class HarnessTest {
 
 	@Autowired
