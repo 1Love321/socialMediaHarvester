@@ -10,7 +10,7 @@ import com.harvester.socialmediaharvester.service.UserAccountService;
 
 import reactor.core.publisher.Mono;
 
-/** Who is signed in, so the React app can shape itself to the role. */
+/** {@code /api/me}: the signed-in user's email and Role. */
 @RestController
 public class CurrentUserController {
 

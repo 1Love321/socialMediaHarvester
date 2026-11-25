@@ -6,8 +6,8 @@ Judgement calls for review. Mechanical rules are ArchUnit tests (listed at the e
 
 All code sits under `com.harvester.socialmediaharvester`, packaged by layer:
 
-- `config`: wiring only. `*Config` classes (`@Configuration(proxyBeanMethods = false)`) build beans and take other beans as `@Bean` method arguments. `*Properties` records are `@Validated` and registered with `@EnableConfigurationProperties` on a config class. Startup triggers (an `ApplicationRunner` bean) live here and call a service for the work. Startup guards (`EnvironmentPostProcessor`, Flyway customizers) live here too.
-- `controller`: HTTP only. Read the request, call a service, map the result to a `model/dto` record. Return DTOs, never entities.
+- `config`: wiring only. `*Config` classes (`@Configuration(proxyBeanMethods = false)`) build beans and take other beans as `@Bean` method arguments. `*Properties` records are `@Validated` and registered with `@EnableConfigurationProperties` on a config class. A setting needed only in some situations (the first-Admin settings, needed only on an empty database) carries no constraint; the service that needs it checks it and fails with a message naming the environment variables. Startup triggers (an `ApplicationRunner` bean) live here and call a service for the work. Startup guards (`EnvironmentPostProcessor`, Flyway customizers) live here too.
+- `controller`: HTTP only. Read the request, call a service, map the result to a `model/dto` record. Return DTOs, never entities. The one exception is a static server-rendered page such as the sign-in form, which `SignInController` returns as HTML with no service call.
 - `service`: the behaviour. Concrete `*Service` classes; they own repository calls and business rules.
 - `model`: entities and enums. `model/dto`: API records.
 - `repository`: Spring Data R2DBC interfaces.

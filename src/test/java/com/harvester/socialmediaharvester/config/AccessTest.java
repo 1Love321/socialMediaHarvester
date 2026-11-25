@@ -40,6 +40,14 @@ class AccessTest {
 	}
 
 	@ParameterizedTest
+	@ValueSource(strings = { MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.ALL_VALUE })
+	void signInPageIsHtmlWhateverTheRequestAccepts(String accept) {
+		client.get().uri("/login").header("Accept", accept).exchange()
+				.expectStatus().isOk()
+				.expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML);
+	}
+
+	@ParameterizedTest
 	@ValueSource(strings = { "/", "/index.html", "/actuator/info", "/anything" })
 	void pagesRedirectToSignInWithoutSigningIn(String path) {
 		client.get().uri(path).accept(MediaType.TEXT_HTML).exchange()

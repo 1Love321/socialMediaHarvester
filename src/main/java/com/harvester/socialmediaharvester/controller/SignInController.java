@@ -1,6 +1,7 @@
 package com.harvester.socialmediaharvester.controller;
 
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,13 +14,15 @@ import reactor.core.publisher.Mono;
 @RestController
 public class SignInController {
 
-	@GetMapping(path = "/login", produces = MediaType.TEXT_HTML_VALUE)
-	Mono<String> signInPage(ServerWebExchange exchange) {
+	/** Always HTML, whatever the request accepts. */
+	@GetMapping("/login")
+	Mono<ResponseEntity<String>> signInPage(ServerWebExchange exchange) {
 		Mono<CsrfToken> token = exchange.getAttributeOrDefault(CsrfToken.class.getName(), Mono.empty());
 		boolean failed = exchange.getRequest().getQueryParams().containsKey("error");
 		boolean signedOut = exchange.getRequest().getQueryParams().containsKey("logout");
 		return token.map(csrf -> html(csrf, failed, signedOut))
-				.defaultIfEmpty(html(null, failed, signedOut));
+				.defaultIfEmpty(html(null, failed, signedOut))
+				.map(body -> ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(body));
 	}
 
 	private static String html(CsrfToken csrf, boolean failed, boolean signedOut) {
