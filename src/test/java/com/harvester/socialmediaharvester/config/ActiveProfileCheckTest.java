@@ -12,7 +12,7 @@ import org.springframework.core.env.StandardEnvironment;
 
 import com.harvester.socialmediaharvester.SocialMediaHarvesterApplication;
 
-/** Starting without exactly one environment profile that chooses a database stops before any connection. */
+/** Starting without exactly one known environment profile that chooses a database stops before any connection. */
 class ActiveProfileCheckTest {
 
 	@Test
@@ -24,7 +24,13 @@ class ActiveProfileCheckTest {
 	@Test
 	void startupWithAnUnknownProfileFailsClearly() {
 		assertThatThrownBy(() -> start("staging"))
-				.hasStackTraceContaining("The active profile [staging] chooses no database. Set SPRING_PROFILES_ACTIVE");
+				.hasStackTraceContaining("Unknown Spring profile [staging]. Set SPRING_PROFILES_ACTIVE");
+	}
+
+	@Test
+	void startupWithAnUnknownProfileBesideAnEnvironmentProfileFailsClearly() {
+		assertThatThrownBy(() -> start("local", "foo"))
+				.hasStackTraceContaining("Unknown Spring profile [foo]. Set SPRING_PROFILES_ACTIVE");
 	}
 
 	@Test

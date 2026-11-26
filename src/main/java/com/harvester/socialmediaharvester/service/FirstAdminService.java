@@ -40,7 +40,7 @@ public class FirstAdminService {
 	}
 
 	/**
-	 * The one wait in the app (ADR 0010): called once at startup on the main
+	 * The one wait in the app (ADR 0012): called once at startup on the main
 	 * thread, which is not a reactive thread, so startup cannot finish before
 	 * the first Admin exists.
 	 */

@@ -55,8 +55,10 @@ class ApiErrorWebExceptionHandlerTest {
 
 		assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
 		assertThat(exchange.getResponse().getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
-		String body = exchange.getResponse().getBodyAsString().block();
-		assertThat(body).contains("\"status\":500").doesNotContain("SELECT").doesNotContain("password");
+		StepVerifier.create(exchange.getResponse().getBodyAsString())
+				.assertNext(body -> assertThat(body).contains("\"status\":500").doesNotContain("SELECT")
+						.doesNotContain("password"))
+				.verifyComplete();
 	}
 
 	@Test
