@@ -5,7 +5,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.harvester.socialmediaharvester.model.dto.CurrentUserResponse;
+import com.harvester.socialmediaharvester.dto.CurrentUserResponse;
+import com.harvester.socialmediaharvester.model.UserAccount;
 import com.harvester.socialmediaharvester.service.UserAccountService;
 
 import reactor.core.publisher.Mono;
@@ -22,6 +23,10 @@ public class CurrentUserController {
 
 	@GetMapping("/api/me")
 	Mono<CurrentUserResponse> currentUser(@AuthenticationPrincipal UserDetails principal) {
-		return accounts.findByEmail(principal.getUsername()).map(CurrentUserResponse::from);
+		return accounts.findByEmail(principal.getUsername()).map(CurrentUserController::toResponse);
+	}
+
+	private static CurrentUserResponse toResponse(UserAccount account) {
+		return new CurrentUserResponse(account.email(), account.role());
 	}
 }

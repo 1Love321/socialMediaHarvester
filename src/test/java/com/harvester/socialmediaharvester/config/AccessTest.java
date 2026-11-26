@@ -61,4 +61,16 @@ class AccessTest {
 		client.get().uri(path).accept(MediaType.TEXT_HTML).exchange()
 				.expectStatus().isUnauthorized();
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_HTML_VALUE, MediaType.ALL_VALUE })
+	void apiRefusalIsAProblemDetailWhateverTheRequestAccepts(String accept) {
+		client.get().uri("/api/me").header("Accept", accept).exchange()
+				.expectStatus().isUnauthorized()
+				.expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+				.expectBody()
+				.jsonPath("$.status").isEqualTo(401)
+				.jsonPath("$.title").isEqualTo("Unauthorized")
+				.jsonPath("$.instance").isEqualTo("/api/me");
+	}
 }

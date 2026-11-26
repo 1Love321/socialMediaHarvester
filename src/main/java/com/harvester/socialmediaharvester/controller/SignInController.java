@@ -30,7 +30,7 @@ public class SignInController {
 				: "<input type=\"hidden\" name=\"%s\" value=\"%s\">".formatted(
 						HtmlUtils.htmlEscape(csrf.getParameterName()), HtmlUtils.htmlEscape(csrf.getToken()));
 		String message = failed ? "<p role=\"alert\">Wrong email or password.</p>"
-				: signedOut ? "<p role=\"status\">You have been logged out.</p>" : "";
+				: signedOut ? "<p role=\"status\">You have been signed out.</p>" : "";
 		return """
 				<!doctype html>
 				<html lang="en">

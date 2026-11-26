@@ -12,7 +12,7 @@ import org.springframework.core.env.StandardEnvironment;
 
 import com.harvester.socialmediaharvester.SocialMediaHarvesterApplication;
 
-/** There is no default profile: starting without one that chooses a database stops before any connection. */
+/** Starting without exactly one environment profile that chooses a database stops before any connection. */
 class ActiveProfileCheckTest {
 
 	@Test
@@ -25,6 +25,12 @@ class ActiveProfileCheckTest {
 	void startupWithAnUnknownProfileFailsClearly() {
 		assertThatThrownBy(() -> start("staging"))
 				.hasStackTraceContaining("The active profile [staging] chooses no database. Set SPRING_PROFILES_ACTIVE");
+	}
+
+	@Test
+	void startupWithTwoEnvironmentProfilesFailsClearly() {
+		assertThatThrownBy(() -> start("dev", "prod"))
+				.hasStackTraceContaining("Only one environment profile may be active, but [dev, prod] are.");
 	}
 
 	private static void start(String... profiles) {
