@@ -9,14 +9,17 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.codec.HttpMessageWriter;
 import org.springframework.http.codec.ServerCodecConfigurer;
+import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
 import reactor.core.publisher.Mono;
 
 /**
  * Writes a {@link ProblemDetail} as the response, for error handlers that run outside a
- * controller and so cannot return one for Spring to render.
+ * controller and so cannot return one for Spring to render. One bean, so the codec is
+ * looked up once and shared by every such handler.
  */
+@Component
 public class ProblemDetailWriter {
 
 	private static final ResolvableType PROBLEM = ResolvableType.forClass(ProblemDetail.class);

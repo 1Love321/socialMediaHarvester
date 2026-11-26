@@ -2,7 +2,6 @@ package com.harvester.socialmediaharvester.security;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
-import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.web.server.ServerWebExchange;
@@ -20,8 +19,8 @@ public class ProblemDetailAuthenticationEntryPoint implements ServerAuthenticati
 
 	private final ProblemDetailWriter problems;
 
-	public ProblemDetailAuthenticationEntryPoint(ServerCodecConfigurer codecs) {
-		this.problems = new ProblemDetailWriter(codecs);
+	public ProblemDetailAuthenticationEntryPoint(ProblemDetailWriter problems) {
+		this.problems = problems;
 	}
 
 	@Override

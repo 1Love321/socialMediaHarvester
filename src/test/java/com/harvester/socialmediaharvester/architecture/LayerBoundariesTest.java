@@ -82,10 +82,12 @@ class LayerBoundariesTest {
 
 	@ArchTest
 	static final ArchRule nothingReferencesTheExceptionHandler = noClasses()
-			.should().dependOnClassesThat().areAnnotatedWith(RestControllerAdvice.class)
-			.orShould().dependOnClassesThat().areAnnotatedWith(ControllerAdvice.class)
-			.orShould().dependOnClassesThat(JavaClass.Predicates.assignableTo(WebExceptionHandler.class)
-					.and(resideInAPackage(ROOT + "..")))
+			// Only the application's own handlers: @RestControllerAdvice is itself annotated
+			// with @ControllerAdvice, so using the annotation must not count as a reference.
+			.should().dependOnClassesThat(resideInAPackage(ROOT + "..")
+					.and(JavaClass.Predicates.assignableTo(WebExceptionHandler.class)
+							.or(annotatedWith(RestControllerAdvice.class))
+							.or(annotatedWith(ControllerAdvice.class))))
 			.because("error handlers are HTTP boundary components: Spring invokes them, application code does not");
 
 	@ArchTest

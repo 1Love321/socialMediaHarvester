@@ -3,6 +3,9 @@ package com.harvester.socialmediaharvester.service;
 import java.time.Clock;
 import java.time.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -23,6 +26,8 @@ import reactor.core.scheduler.Schedulers;
  */
 @Service
 public class FirstAdminService {
+
+	private static final Logger log = LoggerFactory.getLogger(FirstAdminService.class);
 
 	private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(1);
 
@@ -48,12 +53,21 @@ public class FirstAdminService {
 		seedIfEmpty().block(STARTUP_TIMEOUT);
 	}
 
+	/**
+	 * Another instance starting at the same time may save the first Admin between
+	 * this count and save; the unique email index then refuses the second save,
+	 * which counts as already seeded.
+	 */
 	public Mono<Void> seedIfEmpty() {
 		return accounts.count()
 				.filter(count -> count == 0)
 				.flatMap(none -> newAdmin())
 				.flatMap(accounts::save)
-				.then();
+				.then()
+				.onErrorResume(DuplicateKeyException.class, duplicate -> {
+					log.info("The first Admin was already created by another instance; nothing to seed");
+					return Mono.empty();
+				});
 	}
 
 	private Mono<UserAccount> newAdmin() {

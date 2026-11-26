@@ -23,7 +23,7 @@ public class CurrentUserController {
 
 	@GetMapping("/api/me")
 	Mono<CurrentUserResponse> currentUser(@AuthenticationPrincipal UserDetails principal) {
-		return accounts.findByEmail(principal.getUsername()).map(CurrentUserController::toResponse);
+		return accounts.findSignedIn(principal.getUsername()).map(CurrentUserController::toResponse);
 	}
 
 	private static CurrentUserResponse toResponse(UserAccount account) {

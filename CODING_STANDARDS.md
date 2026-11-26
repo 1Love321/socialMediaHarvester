@@ -15,7 +15,7 @@ The application is organised layer-first. Place a class by what it does; its nam
 | `model` | Domain types: entities, value objects, enums. A model need not be a table; a result an external integration returns is a model too. |
 | `dto` | API records the frontend sends and receives, such as `CreateUserRequest` and `UserResponse`. |
 | `mapper` | Conversions between `model` and `dto` that more than one controller uses, or that are too long to sit in one. A one-line mapping stays a private method in its controller. |
-| `exception` | Application exceptions, and the error handlers that turn failures into `ProblemDetail` responses (see [Exception handling](#exception-handling)). |
+| `exception` | Application exceptions, and the error handlers that turn failures into `ProblemDetail` responses (see [Exception handling](#exception-handling)), with any helper those handlers share, such as a `ProblemDetail` writer. |
 | `client` | Calls to external APIs and the external API's own request and response types. |
 | `security` | Security infrastructure beyond wiring: a credential encryptor, a custom authentication manager or entry point. `SecurityConfig` stays in `config` and wires them. |
 

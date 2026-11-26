@@ -18,19 +18,34 @@ public class SignInController {
 	@GetMapping("/login")
 	Mono<ResponseEntity<String>> signInPage(ServerWebExchange exchange) {
 		Mono<CsrfToken> token = exchange.getAttributeOrDefault(CsrfToken.class.getName(), Mono.empty());
-		boolean failed = exchange.getRequest().getQueryParams().containsKey("error");
-		boolean signedOut = exchange.getRequest().getQueryParams().containsKey("logout");
-		return token.map(csrf -> html(csrf, failed, signedOut))
-				.defaultIfEmpty(html(null, failed, signedOut))
+		Outcome outcome = Outcome.of(exchange);
+		return token.map(csrf -> html(csrf, outcome))
+				.defaultIfEmpty(html(null, outcome))
 				.map(body -> ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(body));
 	}
 
-	private static String html(CsrfToken csrf, boolean failed, boolean signedOut) {
+	/** What brought the person to the form, and the message it shows them. */
+	private enum Outcome {
+		NONE(""),
+		FAILED("<p role=\"alert\">Wrong email or password.</p>"),
+		SIGNED_OUT("<p role=\"status\">You have been signed out.</p>");
+
+		private final String message;
+
+		Outcome(String message) {
+			this.message = message;
+		}
+
+		static Outcome of(ServerWebExchange exchange) {
+			var query = exchange.getRequest().getQueryParams();
+			return query.containsKey("error") ? FAILED : query.containsKey("logout") ? SIGNED_OUT : NONE;
+		}
+	}
+
+	private static String html(CsrfToken csrf, Outcome outcome) {
 		String csrfField = csrf == null ? ""
 				: "<input type=\"hidden\" name=\"%s\" value=\"%s\">".formatted(
 						HtmlUtils.htmlEscape(csrf.getParameterName()), HtmlUtils.htmlEscape(csrf.getToken()));
-		String message = failed ? "<p role=\"alert\">Wrong email or password.</p>"
-				: signedOut ? "<p role=\"status\">You have been signed out.</p>" : "";
 		return """
 				<!doctype html>
 				<html lang="en">
@@ -48,6 +63,6 @@ public class SignInController {
 				</main>
 				</body>
 				</html>
-				""".formatted(message, csrfField);
+				""".formatted(outcome.message, csrfField);
 	}
 }

@@ -1,6 +1,9 @@
 package com.harvester.socialmediaharvester.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -12,10 +15,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.harvester.socialmediaharvester.config.FirstAdminProperties;
 import com.harvester.socialmediaharvester.model.Role;
+import com.harvester.socialmediaharvester.model.UserAccount;
 import com.harvester.socialmediaharvester.repository.UserAccountRepository;
 import com.harvester.socialmediaharvester.support.AppTest;
 import com.harvester.socialmediaharvester.support.FirstAdmin;
 
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 /** The first Admin is created from config on an empty database only, with the password hashed. */
@@ -86,6 +91,20 @@ class FirstAdminServiceTest {
 						.hasMessageContaining("HARVESTER_FIRST_ADMIN_EMAIL")
 						.hasMessageContaining("HARVESTER_FIRST_ADMIN_PASSWORD"))
 				.verify();
+	}
+
+	@Test
+	void anotherInstanceSeedingFirstMeansAlreadySeeded() {
+		// Another instance saved the first Admin between this instance's count and save:
+		// the count saw an empty database, the save hits the unique email index.
+		UserAccountRepository racing = mock(UserAccountRepository.class);
+		when(racing.count()).thenReturn(Mono.just(0L));
+		when(racing.save(any(UserAccount.class))).thenAnswer(call -> accounts.save(call.getArgument(0)));
+
+		StepVerifier.create(new FirstAdminService(CONFIGURED, passwordEncoder, clock, racing).seedIfEmpty())
+				.verifyComplete();
+
+		StepVerifier.create(accounts.count()).expectNext(1L).verifyComplete();
 	}
 
 	private FirstAdminService seeder(FirstAdminProperties properties) {

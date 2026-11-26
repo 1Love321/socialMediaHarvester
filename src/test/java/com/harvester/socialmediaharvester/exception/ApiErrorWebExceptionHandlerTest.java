@@ -24,7 +24,7 @@ class ApiErrorWebExceptionHandlerTest {
 	@Autowired
 	WebTestClient client;
 
-	private final ApiErrorWebExceptionHandler handler = new ApiErrorWebExceptionHandler(ServerCodecConfigurer.create());
+	private final ApiErrorWebExceptionHandler handler = new ApiErrorWebExceptionHandler(new ProblemDetailWriter(ServerCodecConfigurer.create()));
 
 	@Test
 	void anUnknownApiPathIsAProblemDetail() {

@@ -20,12 +20,12 @@ How [CODING_STANDARDS.md](CODING_STANDARDS.md) applies to this project, plus the
 
 ## Errors and security
 
-- API paths are `/api/**`. Without signing in they answer 401 with a `ProblemDetail` from `security.ProblemDetailAuthenticationEntryPoint`; pages redirect to `/login`. No endpoint is role-restricted yet, so the 403 `ProblemDetail` handler arrives with the first one. Other API errors outside a controller are answered by `exception.ApiErrorWebExceptionHandler`.
+- API paths are `/api/**`. Without signing in they answer 401 with a `ProblemDetail` from `security.ProblemDetailAuthenticationEntryPoint`; pages redirect to `/login`. No endpoint is role-restricted yet, so the 403 `ProblemDetail` handler arrives with the first one. Application exceptions from controllers become a `ProblemDetail` in `exception.GlobalExceptionHandler`; a signed-in account that no longer exists answers 401, so the React app returns to `/login`. Other API errors outside a controller are answered by `exception.ApiErrorWebExceptionHandler`. Handlers that write the response themselves share the `exception.ProblemDetailWriter` bean.
 - A slow Platform API never runs inside a database transaction.
 
 ## Configuration
 
-- Environment profiles: `local`, `dev`, `prod`, and `test` for tests only. `config.ActiveProfileCheck` refuses no profile, an unknown one, or more than one.
+- Environment profiles: `local`, `dev`, `prod`, and `test` for tests only, named once in `config.EnvironmentProfile`. `config.ActiveProfileCheck` refuses no profile, an unknown one, or more than one.
 - Each profile file names its own database host, port and name (issue #28).
 - Database credentials come only from `DB_USER_HARVEST` / `DB_PASSWORD_HARVEST`; `config.DatabaseCredentialsCheck` refuses any other source.
 - The first-Admin settings (`HARVESTER_FIRST_ADMIN_EMAIL`, `HARVESTER_FIRST_ADMIN_PASSWORD`) are needed only on an empty database; `FirstAdminService` checks they are present, and `FirstAdminProperties` validates a supplied email.

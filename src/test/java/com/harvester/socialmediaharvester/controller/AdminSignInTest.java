@@ -1,7 +1,11 @@
 package com.harvester.socialmediaharvester.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import com.harvester.socialmediaharvester.support.AppTest;
@@ -22,6 +26,21 @@ class AdminSignInTest {
 				.expectBody()
 				.jsonPath("$.email").isEqualTo(FirstAdmin.EMAIL)
 				.jsonPath("$.role").isEqualTo("ADMIN");
+	}
+
+	@Test
+	void signingInLeadsToTheReactApp() {
+		ResponseCookie session = SignIn.submit(client, FirstAdmin.EMAIL, FirstAdmin.PASSWORD)
+				.expectStatus().isFound()
+				.expectHeader().location("/")
+				.returnResult(Void.class)
+				.getResponseCookies().getFirst("SESSION");
+		assertThat(session).as("sign-in starts a session").isNotNull();
+
+		client.get().uri("/").cookie(session.getName(), session.getValue()).accept(MediaType.TEXT_HTML).exchange()
+				.expectStatus().isOk()
+				.expectHeader().contentTypeCompatibleWith(MediaType.TEXT_HTML)
+				.expectBody(String.class).value(page -> assertThat(page).contains("<div id=\"root\"></div>"));
 	}
 
 	@Test

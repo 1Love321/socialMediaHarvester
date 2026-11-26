@@ -1,7 +1,5 @@
 package com.harvester.socialmediaharvester.config;
 
-import java.util.Arrays;
-
 import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.springframework.boot.flyway.autoconfigure.FlywayConfigurationCustomizer;
 import org.springframework.core.env.Environment;
@@ -24,7 +22,7 @@ class FlywayCleanGuard implements FlywayConfigurationCustomizer {
 
 	@Override
 	public void customize(FluentConfiguration configuration) {
-		if (!Arrays.equals(environment.getActiveProfiles(), new String[] { "test" })) {
+		if (!EnvironmentProfile.TEST.isTheOnlyActiveProfile(environment)) {
 			configuration.cleanDisabled(true);
 		}
 	}

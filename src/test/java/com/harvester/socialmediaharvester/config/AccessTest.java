@@ -25,6 +25,12 @@ class AccessTest {
 	}
 
 	@Test
+	void healthProbePathsAreReachableWithoutSigningIn() {
+		client.get().uri("/actuator/health/liveness").accept(MediaType.TEXT_HTML).exchange()
+				.expectStatus().value(status -> assertThat(status).as("not redirected to sign in").isNotEqualTo(302));
+	}
+
+	@Test
 	void anonymousHealthCheckStartsNoSession() {
 		var response = client.get().uri("/actuator/health").exchange()
 				.expectStatus().isOk()

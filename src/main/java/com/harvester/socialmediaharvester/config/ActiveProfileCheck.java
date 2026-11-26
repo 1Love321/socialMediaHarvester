@@ -2,7 +2,6 @@ package com.harvester.socialmediaharvester.config;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
@@ -18,9 +17,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  */
 public class ActiveProfileCheck implements EnvironmentPostProcessor, Ordered {
 
-	private static final String PROFILE_CHOICES = "local, dev or prod (tests use the test profile)";
-
-	private static final Set<String> ENVIRONMENT_PROFILES = Set.of("local", "dev", "prod", "test");
+	private static final String PROFILE_CHOICES = EnvironmentProfile.choices();
 
 	@Override
 	public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
@@ -29,7 +26,7 @@ public class ActiveProfileCheck implements EnvironmentPostProcessor, Ordered {
 			throw new IllegalStateException("No Spring profile is active. Set SPRING_PROFILES_ACTIVE to "
 					+ PROFILE_CHOICES + " before starting the app.");
 		}
-		List<String> unknown = Arrays.stream(active).filter(profile -> !ENVIRONMENT_PROFILES.contains(profile)).toList();
+		List<String> unknown = Arrays.stream(active).filter(profile -> !EnvironmentProfile.isEnvironmentProfile(profile)).toList();
 		if (!unknown.isEmpty()) {
 			throw new IllegalStateException("Unknown Spring profile " + unknown + ". Set SPRING_PROFILES_ACTIVE to "
 					+ PROFILE_CHOICES + ".");

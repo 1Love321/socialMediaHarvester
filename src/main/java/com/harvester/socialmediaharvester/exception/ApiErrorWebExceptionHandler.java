@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
-import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.stereotype.Component;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.server.ServerWebExchange;
@@ -31,8 +30,8 @@ public class ApiErrorWebExceptionHandler implements WebExceptionHandler {
 
 	private final ProblemDetailWriter problems;
 
-	public ApiErrorWebExceptionHandler(ServerCodecConfigurer codecs) {
-		this.problems = new ProblemDetailWriter(codecs);
+	public ApiErrorWebExceptionHandler(ProblemDetailWriter problems) {
+		this.problems = problems;
 	}
 
 	@Override
